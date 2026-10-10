@@ -101,7 +101,9 @@ These commands verify the stock example only. The new SRP case must document its
 
 ## Repository caution
 
-At the time of this handoff, the outer repository reports `NGA2/`, `OtherResearch/`, and `Thesis/` as untracked. `NGA2/` is also a nested Git repository. A new chat in the same workspace can read these files, but another computer will not receive them through the outer repository until the Git structure is deliberately resolved and the intended files are committed.
+`NGA2/` is intentionally maintained as a separate Git repository and ignored by the outer thesis repository. Its configured remote is `https://github.com/desjardi/NGA2.git`. The thesis documents, research files, `AGENTS.md`, and this handoff are tracked by the outer repository.
+
+A new chat in the same workspace can read the local NGA2 checkout. Another computer must clone NGA2 separately because the outer repository does not contain it or configure it as a submodule.
 
 Do not delete `.git` metadata or convert the nested repository without explicit user approval.
 
