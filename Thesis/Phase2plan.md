@@ -20,9 +20,10 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 ## Current status
 
 - NGA2 and the stock periodic channel example have already been built and run with four MPI ranks.
-- `Thesis/simulations/srp_channel` now contains the thesis-owned case scaffold, build configuration, target mesh input, and run directory.
-- `geometry.f90` and `simulation.f90` are still placeholders, so the SRP case does not yet compile or run.
-- The target resolution is recorded as `nx = 256`, `ny = 64`, and `nz = 64`; physical dimensions and operating conditions are intentionally unset.
+- `Thesis/simulations/srp_channel` contains the implemented thesis-owned empty-channel case, build configuration, debug/target inputs, and dated run evidence.
+- Four-rank MPI smoke tests have completed on `32 x 12 x 12` and target `256 x 64 x 64` meshes with bounded CFL/divergence and mass-flow balance near machine precision.
+- Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
+- No porous-medium or bead-rod physics has been implemented.
 
 ## Assumptions and decisions still needed
 
@@ -51,12 +52,12 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 ### 2. Create a separate 3D SRP case
 
-- [ ] Add the minimum implementation needed to the `Thesis/simulations/srp_channel` scaffold: input parameters and source files.
-- [ ] Create a Cartesian grid with `nx = 256`, `ny = 64`, and `nz = 64`.
-- [ ] Make `x` nonperiodic and retain solid walls on the channel cross-section.
-- [ ] Choose an MPI partition whose factors match the launched rank count and divide the mesh dimensions exactly.
-- [ ] Add a finite stopping condition and configurable output intervals.
-- [ ] Compile the new case without changing the stock channel case.
+- [x] Add the minimum implementation needed to the `Thesis/simulations/srp_channel` scaffold: input parameters and source files.
+- [x] Create a Cartesian grid with `nx = 256`, `ny = 64`, and `nz = 64`.
+- [x] Make `x` nonperiodic and retain solid walls on the channel cross-section.
+- [x] Choose an MPI partition whose factors match the launched rank count and divide the mesh dimensions exactly.
+- [x] Add a finite stopping condition and configurable output intervals.
+- [x] Compile the new case without changing the stock channel case.
 
 **Implementation reference:** Reuse the inflow/outflow pattern already demonstrated in `NGA2/examples/pipe/src/simulation.f90` or `NGA2/examples/cylinder/src/simulation.f90`: a Dirichlet inlet, clipped-Neumann outlet, and mass-flow correction. Remove the stock channel's periodic streamwise forcing.
 
@@ -64,13 +65,13 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 ### 3. Verify the empty-channel flow
 
-- [ ] Run a short low-resolution or short-duration test before the full `256 x 64 x 64` run.
-- [ ] Monitor CFL, maximum divergence, pressure-solver residual/iterations, and inlet/outlet mass flow.
-- [ ] Add outputs for area-averaged pressure at fixed upstream and downstream planes.
-- [ ] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
-- [ ] Compute mass-flow conservation error using Project Eqs. P4-P5.
+- [x] Run a short low-resolution or short-duration test before the full `256 x 64 x 64` run.
+- [x] Monitor CFL, maximum divergence, pressure-solver residual/iterations, and inlet/outlet mass flow.
+- [x] Add outputs for area-averaged pressure at fixed upstream and downstream planes.
+- [x] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
+- [x] Compute mass-flow conservation error using Project Eqs. P4-P5.
 - [ ] Run until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
-- [ ] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
+- [x] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
 
 **Verify:** CFL remains below its configured limit, the solver residuals remain bounded, inlet and outlet mass flow agree within a documented tolerance, and the measured empty-channel pressure drop is physically plausible.
 
@@ -147,5 +148,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-Replace the placeholder `geometry.f90` and `simulation.f90` in `Thesis/simulations/srp_channel` with the minimum empty, nonperiodic 3D inflow/outflow channel, using the smallest suitable NGA2 example as a reference. Add a small debug mesh and finite end time before attempting the full `256 x 64 x 64` case. Do not begin the porous model until the empty case passes the checks in Step 3.
+Obtain the confirmed physical dimensions and operating conditions, then extend the target-mesh empty-channel run until pressure drop and mass flow satisfy a documented steady or statistically stationary convergence rule. Do not begin the porous model until that remaining Step 3 check passes.
 

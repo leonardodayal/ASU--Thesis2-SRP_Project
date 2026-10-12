@@ -24,8 +24,11 @@ Read the checklist before treating this handoff as current. Update both files wh
 - The baseline was manually interrupted because the stock case has no finite stopping time.
 - The radial paper's literature overview, assumptions, limitations, and Eqs. (1)-(27) have been reviewed.
 - The equation sheet distinguishes original paper equations, SRP/NGA2 adaptations, and independently added project equations.
+- The thesis-owned `Thesis/simulations/srp_channel` case now implements a 3D rectangular open channel with explicit inflow/outflow, stationary immersed walls, finite stopping time, flow/pressure outputs, and conservation monitors.
+- Four-rank MPI smoke tests completed on `32 x 12 x 12` and `256 x 64 x 64` meshes. The target run reached `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative mass-flow error about `7e-15`.
+- The smoke-test dimensions and operating conditions are provisional; no converged or experimentally validated pressure-drop result exists yet.
 
-## Important limitation of the baseline
+## Important limitation of the stock baseline
 
 The completed baseline is the unmodified stock channel case:
 
@@ -34,25 +37,24 @@ The completed baseline is the unmodified stock channel case:
 - Streamwise boundary: periodic
 - Driving method: body force
 
-It is **not** the required 3D SRP channel with explicit inflow and outflow. Do not mark the 3D channel or open inflow/outflow tasks complete based on this run.
+It is **not** the required 3D SRP channel with explicit inflow and outflow. The separate thesis-owned case now satisfies that smoke-test milestone; the stock run remains useful only as an NGA2 installation check.
 
 ## Immediate next task
 
-Create a separate SRP simulation case with a 3D Cartesian channel and explicit inflow and outflow. Run and verify the open channel before adding porous bead rods.
+Confirm the physical contactor dimensions and operating conditions, then extend the target-mesh empty-channel run to a documented steady or statistically stationary baseline. Do not add porous bead rods until this baseline is accepted.
 
 ### Success criteria
 
-1. The SRP case is separate from the stock NGA2 channel example.
-2. The mesh is genuinely three-dimensional; use a smaller debug mesh before the target `64 x 64 x 256` mesh if needed.
-3. Inlet, outlet, and wall boundary conditions are documented.
-4. The case builds and runs reproducibly with a finite stopping condition.
-5. Inlet and outlet mass flow agree within a stated tolerance.
-6. Pressure and velocity fields are physically reasonable and viewable in the selected post-processing format.
-7. The run directory records the code revision, input file, command, runtime, and key diagnostics.
+1. Replace all provisional geometry, fluid, and inlet values with confirmed dimensional inputs and provenance.
+2. Define a convergence rule for pressure drop and mass flow before the quantitative run.
+3. Run long enough to meet that rule while maintaining bounded CFL, divergence, and solver behavior.
+4. Verify inlet and outlet mass flow against a stated tolerance.
+5. Inspect pressure, velocity, and wall-volume-fraction fields in Ensight-compatible post-processing.
+6. Preserve the input, command, code revision, runtime, and key diagnostics in a dated run directory.
 
 ## Planned implementation sequence
 
-1. Create and verify the 3D open-channel case.
+1. **Completed:** Create and smoke-test the 3D open-channel case.
 2. Add tagged porous bead-rod cells.
 3. Add Darcy-Forchheimer resistance based on radial-paper Eq. (10).
 4. Use radial-paper Eqs. (18)-(19) only as initial estimates.
@@ -79,6 +81,7 @@ Create a separate SRP simulation case with a 3D Cartesian channel and explicit i
 
 ## External blockers and questions
 
+- **Justin/Marcus:** confirmed contactor dimensions, inlet/airflow conditions, and pressure-tap locations for the quantitative empty-channel baseline.
 - **Justin:** through-sheet pressure-drop data for empty sheets and bead-filled sheets.
 - **Marcus:** which rod orientations should be simulated first.
 - **Justin, possible:** wind-tunnel test of the bead box for system-level validation.
@@ -97,7 +100,7 @@ make USE_HYPRE=FALSE USE_LAPACK=FALSE
 mpiexec -n 4 ./nga.dp.gnu.opt.mpi.exe -i input
 ```
 
-These commands verify the stock example only. The new SRP case must document its own build and run procedure.
+These commands verify the stock example only. The thesis-owned case build/run procedure and smoke-test evidence are documented in `Thesis/simulations/srp_channel/README.md`.
 
 ## Repository caution
 

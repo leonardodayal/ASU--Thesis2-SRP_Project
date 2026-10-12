@@ -1,0 +1,26 @@
+# Parallelization
+Partition : 4 1 1
+
+# Small verification mesh; the target case is defined in input.
+nx : 32
+ny : 12
+nz : 12
+Wall padding cells : 2
+
+# Provisional nondimensional open-passage dimensions.
+Lx : 4
+Ly : 1
+Lz : 1
+
+# Provisional constant-density properties and uniform inlet condition.
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+
+# Short finite smoke test.
+Max timestep size : 5e-3
+Max cfl number : 0.8
+Max time : 2e-2
+
+# Field output
+Ensight output period : 1e-2

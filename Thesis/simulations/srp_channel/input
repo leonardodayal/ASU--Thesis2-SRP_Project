@@ -1,10 +1,28 @@
 # Parallelization
 Partition : 4 1 1
 
-# Target mesh resolution
+# Target mesh resolution. ny and nz include two padded wall cells per side;
+# the open passage therefore contains 60 x 60 cross-section cells.
 nx : 256
 ny : 64
 nz : 64
+Wall padding cells : 2
 
-# Physical dimensions and operating conditions are intentionally not set yet.
-# Add confirmed, dimensional values before the first quantitative run.
+# Provisional nondimensional open-passage dimensions. Replace with confirmed
+# experimental dimensions before using the result quantitatively.
+Lx : 4
+Ly : 1
+Lz : 1
+
+# Provisional constant-density properties and uniform inlet condition.
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+
+# Finite target-mesh smoke test, not a converged physical result.
+Max timestep size : 2e-3
+Max cfl number : 0.8
+Max time : 2e-2
+
+# Field output
+Ensight output period : 1e-2
