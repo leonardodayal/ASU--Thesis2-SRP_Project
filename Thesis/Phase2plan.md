@@ -22,6 +22,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - NGA2 and the stock periodic channel example have already been built and run with four MPI ranks.
 - `Thesis/simulations/srp_channel` contains the implemented thesis-owned empty-channel case, build configuration, debug/target inputs, and dated run evidence.
 - Four-rank MPI smoke tests have completed on `32 x 12 x 12` and target `256 x 64 x 64` meshes with bounded CFL/divergence and mass-flow balance near machine precision.
+- The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
+- Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary.
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
 - No porous-medium or bead-rod physics has been implemented.
 
@@ -70,6 +72,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Add outputs for area-averaged pressure at fixed upstream and downstream planes.
 - [x] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
 - [x] Compute mass-flow conservation error using Project Eqs. P4-P5.
+- [x] Inspect the target-mesh geometry and velocity, pressure, and wall-volume-fraction output in ParaView.
 - [ ] Run until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
 - [x] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
 
