@@ -581,10 +581,29 @@ C_2=\frac{2B}{\rho}
 \qquad
 \Delta p=\bar p_{\mathrm{in}}-\bar p_{\mathrm{out}}
 }
-\tag{P3}
+\tag{P3a}
 \]
 
-**Why added:** This defines exactly how simulation pressure drop will be calculated for comparison with experiments.
+For the Cartesian NGA2 implementation, a pressure plane at streamwise cell index \(i_s\) is evaluated with the fluid volume fraction \(VF\):
+
+\[
+\boxed{
+\bar p_{i_s}
+=
+\frac{
+\sum_{j,k}p_{i_s,j,k}\,VF_{i_s,j,k}\,\Delta y_j\Delta z_k
+}{
+\sum_{j,k}VF_{i_s,j,k}\,\Delta y_j\Delta z_k
+},
+\qquad
+\Delta p_s=\bar p_{i_{\mathrm{up}}}-\bar p_{i_{\mathrm{down}}}
+}
+\tag{P3b}
+\]
+
+The sample indices are the cells containing the configured upstream and downstream pressure coordinates. The domain-boundary pressure drop uses the same area weighting at the first and last streamwise pressure cells.
+
+**Why added:** This defines exactly how simulation pressure drop is calculated for comparison with experiments and documents the discrete volume-fraction weighting used by the implemented monitor.
 
 ### Project Eqs. (P4)-(P5): flow and airflow conservation
 
@@ -603,10 +622,22 @@ Q=\int_A\mathbf{u}\cdot\mathbf{n}\,dA,
 =\frac{|\dot m_{\mathrm{in}}-\dot m_{\mathrm{out}}|}
 {\dot m_{\mathrm{in}}}
 }
-\tag{P5}
+\tag{P5a}
 \]
 
-**Why added:** These provide a basic numerical correctness check for every flow case.
+The implemented monitor protects the denominator when the inlet flow is zero:
+
+\[
+\boxed{
+\epsilon_{\dot m}^{\mathrm{NGA2}}
+=
+\frac{|\dot m_{\mathrm{in}}-\dot m_{\mathrm{out}}|}
+{\max\!\left(|\dot m_{\mathrm{in}}|,\epsilon_{\mathrm{mach}}\right)}
+}
+\tag{P5b}
+\]
+
+**Why added:** These provide a basic numerical correctness check for every flow case. `P5b` records the exact denominator protection used in the code; it is equivalent to `P5` for every nonzero-flow case.
 
 ### Project Eqs. (P6)-(P7): flow split and maldistribution
 
@@ -773,17 +804,142 @@ CFL
 
 **Why added:** The paper performs mesh and time-step sensitivity studies but does not assign a numbered equation to the comparison. Apply this to pressure drop, flow split, and adsorption performance.
 
+### Project Eq. (P16): implemented porous-slab mask
+
+For the current verification geometry, the cell-centered porous mask is
+
+\[
+\boxed{
+\chi_{p,i,j,k}
+=
+\begin{cases}
+1,
+&x_{\mathrm{start}}\le x_{m,i}<x_{\mathrm{end}}
+\ \text{and}\ VF_{i,j,k}>0,\\[2mm]
+0,&\text{otherwise}.
+\end{cases}
+}
+\tag{P16}
+\]
+
+Equal bounds, \(x_{\mathrm{start}}=x_{\mathrm{end}}\), disable the porous region. The same mask is exported as `porous_mask` for visual inspection. Bead-rod geometry will replace only this geometric definition; it will not change the resistance law.
+
+### Project Eq. (P17): staggered-face Darcy-Forchheimer source
+
+NGA2 stores velocity components on staggered faces. For a face \(f\), the implemented interpolated mask and speed are
+
+\[
+\boxed{
+\chi_{p,f}=\mathcal I_f(\chi_p),
+\qquad
+s_f=\mathcal I_f\!\left(
+\sqrt{u_c^2+v_c^2+w_c^2}
+\right)
+}
+\tag{P17a}
+\]
+
+where \(\mathcal I_f\) is NGA2's cell-to-face interpolation and the subscript \(c\) denotes cell-centered interpolated velocity. The resistance added to the momentum residual for component \(u_{q,f}\), \(q\in\{x,y,z\}\), is
+
+\[
+\boxed{
+S_{q,f}^{\mathrm{por}}
+=-\chi_{p,f}
+\left(
+\frac{\mu}{\alpha}
++\frac{1}{2}\rho C_2s_f
+\right)u_{q,f}
+}
+\tag{P17b}
+\]
+
+Thus both terms oppose the local velocity. Here \(\alpha>0\) has units of area and \(C_2\ge0\) has units of inverse length. The input `Forchheimer coefficient` defaults to zero when absent, preserving Darcy-only and historical cases.
+
+### Project Eq. (P18): independent uniform-slab reference cases
+
+For a uniform superficial velocity \(U_s\) through a slab of length \(L_p\), the two terms in `P1` were verified separately:
+
+\[
+\boxed{
+\Delta p_D
+=\frac{\mu}{\alpha}U_sL_p,
+\qquad
+\Delta p_F
+=\frac{1}{2}\rho C_2U_s^2L_p
+}
+\tag{P18}
+\]
+
+The Darcy verification used \(\mu=0.01\), \(\alpha=0.01\), \(U_s=1\), \(L_p=1\), and \(C_2=0\), giving \(\Delta p_D=1\). The Forchheimer verification used \(\rho=1\), \(C_2=2\), \(U_s=1\), \(L_p=1\), and effectively infinite permeability, giving \(\Delta p_F=1\). Each simulated excess pressure drop equaled `1` within printed precision.
+
+### Project Eq. (P19): paired-case verification error
+
+The porous contribution is isolated from any common numerical or open-channel pressure loss with a paired control:
+
+\[
+\boxed{
+\Delta p_{\mathrm{por,sim}}
+=\Delta p_{\mathrm{sample,porous}}
+-\Delta p_{\mathrm{sample,control}},
+\qquad
+\epsilon_{\Delta p}
+=\frac{
+\left|\Delta p_{\mathrm{por,sim}}-\Delta p_{\mathrm{por,ref}}\right|
+}{
+\left|\Delta p_{\mathrm{por,ref}}\right|
+}
+}
+\tag{P19}
+\]
+
+The control uses the same mesh, boundary conditions, time step, and sampling planes as its resistance case.
+
+### Project Eq. (P20): flow-through time and averaging window
+
+The characteristic flow-through time and the final-window mean of a monitored quantity \(\phi\) are
+
+\[
+\boxed{
+t_{\mathrm{flow}}=\frac{L_x}{U_{\mathrm{in}}},
+\qquad
+\overline{\phi}_{W}
+=\frac{1}{N_W}\sum_{n\in W}\phi^n
+}
+\tag{P20}
+\]
+
+The provisional target-mesh baseline ran to \(t=t_{\mathrm{flow}}=4\) and used the final 25% of the run, \(W=[3,4]\), containing 501 recorded samples.
+
+### Project Eq. (P21): steady-window pressure-drop criterion
+
+The implemented baseline assessment used the normalized range
+
+\[
+\boxed{
+R_{\Delta p,W}
+=\frac{
+\max_{n\in W}(\Delta p^n)-\min_{n\in W}(\Delta p^n)
+}{
+\left|\overline{\Delta p}_{W}\right|
+}
+}
+\tag{P21}
+\]
+
+The predeclared provisional criterion was \(R_{\Delta p,W}\le0.01\), maximum mass-flow error from `P5` no greater than \(10^{-10}\), CFL no greater than `0.8`, and finite bounded divergence and pressure-solver diagnostics. The target-mesh run gave \(R_{\Delta p,W}=0.00123082\), or `0.123082%`.
+
 ---
 
 ## 6. Equation-to-task map
 
 | SRP task | Equations to use | Status |
 |---|---|---|
-| Open-channel flow | Paper Eq. (9), adaptation `A2`; Paper Eq. (10) with \(\chi_p=0\) | Implement first |
-| Porous bead-rod flow | Paper Eq. (10), adaptation `A3` | Core model |
+| Open-channel flow | Paper Eq. (9), adaptation `A2`; Paper Eq. (10) with \(\chi_p=0\); `P20`-`P21` | Implemented and provisionally converged |
+| Porous slab verification | Adaptation `A3`; `P16`-`P19` | Darcy and Forchheimer terms independently verified |
+| Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; replace slab geometry in `P16` | Resistance implemented; rod mask pending |
 | Initial resistance estimate | Paper Eqs. (18)-(19) | Estimate only |
-| Fit Justin's pressure data | `P1`-`P3` | Replace estimates with fitted values |
-| Flow validation | `P4`-`P7` | Required |
+| Fit Justin's pressure data | `P1`-`P3`, `P19` | Awaiting measured data |
+| Flow validation | `P3`-`P7`, `P14`-`P15`, `P19`-`P21` | Numerical checks implemented; physical validation pending |
 | CO2 scalar transport | Paper Eqs. (11), (14); adaptations `A4`-`A5` | Add after flow validation |
 | CO2 bead loading | Paper Eqs. (1), (17); adaptations `A1`, `A8` | Requires SRP material data |
 | Gas-phase adsorption sink | Paper Eq. (15), adaptation `A6` | Core capture coupling |
@@ -813,8 +969,8 @@ The smallest defensible model uses:
 3. Paper Eqs. (18)-(19) only as initial estimates, followed by `P1`-`P3` calibration.
 4. Paper Eqs. (11) and (14) / adaptations `A4`-`A5` for CO2 transport.
 5. Paper Eqs. (1), (15), and (17) / adaptations `A1`, `A6`, and `A8` for adsorption.
-6. `P4`-`P10` for conservation, pressure drop, flow distribution, and per-level capture.
-7. `P14`-`P15` for numerical verification.
+6. `P3`-`P10` for pressure sampling, conservation, flow distribution, and per-level capture.
+7. `P14`-`P21` for time-step, grid, porous-source, and convergence verification.
 
 Temperature and water can be added after this core model is running and validated.
 
