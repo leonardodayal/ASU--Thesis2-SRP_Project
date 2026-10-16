@@ -11,7 +11,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A separate thesis-owned 3D SRP case now builds and completes finite MPI smoke tests with explicit inflow/outflow on debug and target `256 x 64 x 64` meshes.
 - **Completed:** The target-mesh Ensight output has been opened and inspected successfully in ParaView, including the fluid passage, velocity, pressure, and wall-volume-fraction fields.
 - **Completed:** The provisional target-mesh setup ran for one flow-through time and met its documented numerical convergence rule; this is not yet a physical pressure-drop prediction.
-- **Next milestone:** Replace provisional dimensions and operating conditions, then repeat and accept the converged empty-channel baseline before adding porous resistance.
+- **Completed:** A Darcy-only porous slab and exported mask reproduce the uniform analytical pressure drop exactly within printed precision.
+- **Next milestone:** Add and independently verify the Forchheimer term, then fit both coefficients when Justin's pressure-drop data arrive.
 - **Current blockers:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and Justin's through-sheet pressure-drop data are still outstanding.
 
 ## 1. Get set up
@@ -27,7 +28,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
   - Four-rank debug and target-mesh smoke tests completed normally on 2026-10-10. The target run ended at `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative inlet/outlet mass-flow error about `7e-15`.
   - The target-mesh output was successfully visualized in ParaView on 2026-10-12.
   - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
-- [ ] Add a porous-medium region by modeling the bead rods as cells with lower permeability than the surrounding open space.
+- [x] Add a verified porous-medium test region with lower permeability than the surrounding open space. Bead-rod geometry remains pending.
 - [ ] Use Darcy's law for the resistance, along with the correction one of the papers used for bead structures.
 - [ ] Place 4 or 5 rods across the 64-cell width.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.

@@ -1,0 +1,31 @@
+# Parallelization
+Partition : 4 1 1
+
+# Small uniform-slab verification mesh.
+nx : 32
+ny : 12
+nz : 12
+Wall padding cells : 2
+
+# Provisional nondimensional open-passage dimensions.
+Lx : 4
+Ly : 1
+Lz : 1
+
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+
+# Darcy-only slab from x = 1.5 to 2.5. Project Eq. P1 predicts an
+# excess pressure drop mu*Lp*U/alpha = 1 for this verification case.
+Porous permeability : 0.01
+Porous slab start : 1.5
+Porous slab end : 2.5
+Pressure sample upstream : 1.4375
+Pressure sample downstream : 2.5625
+
+Max timestep size : 5e-3
+Max cfl number : 0.8
+Max time : 4
+
+Ensight output period : 1

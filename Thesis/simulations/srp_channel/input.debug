@@ -17,6 +17,14 @@ Density : 1
 Dynamic viscosity : 0.01
 Inlet velocity : 1
 
+# Darcy-only porous slab. Equal bounds disable the slab for this open case.
+# Permeability has units of length squared; slab bounds use the Lx units.
+Porous permeability : 1
+Porous slab start : 2
+Porous slab end : 2
+Pressure sample upstream : 1
+Pressure sample downstream : 3
+
 # Short finite smoke test.
 Max timestep size : 5e-3
 Max cfl number : 0.8

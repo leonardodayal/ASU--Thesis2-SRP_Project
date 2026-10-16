@@ -58,8 +58,14 @@ contains
          do k=cfg%kmino_,cfg%kmaxo_
             do j=cfg%jmino_,cfg%jmaxo_
                do i=cfg%imino_,cfg%imaxo_
-                  cfg%Gib(i,j,k)=max(abs(cfg%ym(j))-0.5_WP*Ly,&
-                  &                  abs(cfg%zm(k))-0.5_WP*Lz)
+                  if (npad.eq.0) then
+                     ! A zero-padding case is a fully open periodic
+                     ! cross-section for uniform-flow verification.
+                     cfg%Gib(i,j,k)=-min(Ly,Lz)
+                  else
+                     cfg%Gib(i,j,k)=max(abs(cfg%ym(j))-0.5_WP*Ly,&
+                     &                  abs(cfg%zm(k))-0.5_WP*Lz)
+                  end if
                end do
             end do
          end do

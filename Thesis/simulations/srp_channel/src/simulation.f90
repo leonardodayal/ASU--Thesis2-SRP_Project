@@ -23,7 +23,10 @@ module simulation
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
+   real(WP), dimension(:,:,:), allocatable :: chi_p
+   real(WP) :: darcy_coeff,x_pressure_up,x_pressure_down
    real(WP), target :: mfr_in,mfr_out,mfr_error,p_in,p_out,delta_p
+   real(WP), target :: p_upstream,p_downstream,porous_delta_p
 
    public :: simulation_init,simulation_run,simulation_final
 
@@ -84,7 +87,35 @@ contains
       p_in=p_in/max(ain,tiny(1.0_WP))
       p_out=p_out/max(aout,tiny(1.0_WP))
       delta_p=p_in-p_out
+      call sample_pressure_plane(x_pressure_up,p_upstream)
+      call sample_pressure_plane(x_pressure_down,p_downstream)
+      porous_delta_p=p_upstream-p_downstream
    end subroutine update_diagnostics
+
+   subroutine sample_pressure_plane(x_target,p_avg)
+      use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
+      use parallel, only: MPI_REAL_WP
+      real(WP), intent(in) :: x_target
+      real(WP), intent(out) :: p_avg
+      integer :: i,j,k,ierr
+      real(WP) :: my_p,my_a,area
+
+      my_p=0.0_WP; my_a=0.0_WP
+      do i=cfg%imin_,cfg%imax_
+         if (x_target.ge.cfg%x(i).and.x_target.lt.cfg%x(i+1)) then
+            do k=cfg%kmin_,cfg%kmax_
+               do j=cfg%jmin_,cfg%jmax_
+                  my_p=my_p+fs%P(i,j,k)*cfg%VF(i,j,k)*cfg%dy(j)*cfg%dz(k)
+                  my_a=my_a+cfg%VF(i,j,k)*cfg%dy(j)*cfg%dz(k)
+               end do
+            end do
+         end if
+      end do
+      call MPI_ALLREDUCE(my_p,p_avg,1,MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
+      call MPI_ALLREDUCE(my_a,area ,1,MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
+      if (area.le.0.0_WP) error stop 'Pressure sample plane is outside the fluid domain'
+      p_avg=p_avg/area
+   end subroutine sample_pressure_plane
 
    subroutine simulation_init
       use param, only: param_read
@@ -96,6 +127,7 @@ contains
       allocate(Ui  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(Vi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(Wi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
+      allocate(chi_p(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       time=timetracker(amRoot=cfg%amRoot)
       call param_read('Max timestep size',time%dtmax)
       call param_read('Max cfl number',time%cflmax)
@@ -107,11 +139,19 @@ contains
          use incomp_class, only: bcond,dirichlet,clipped_neumann
          type(bcond), pointer :: inflow
          integer :: i,j,k,n
-         real(WP) :: visc,Uin
+         real(WP) :: visc,Uin,alpha,x_start,x_end
 
          fs=incomp(cfg=cfg,name='SRP open channel')
          call param_read('Density',fs%rho)
          call param_read('Dynamic viscosity',visc); fs%visc=visc
+         call param_read('Porous permeability',alpha)
+         call param_read('Porous slab start',x_start)
+         call param_read('Porous slab end',x_end)
+         call param_read('Pressure sample upstream',x_pressure_up)
+         call param_read('Pressure sample downstream',x_pressure_down)
+         if (alpha.le.0.0_WP) error stop 'Porous permeability must be positive'
+         if (x_end.lt.x_start) error stop 'Porous slab end must not precede its start'
+         darcy_coeff=visc/alpha
          call fs%add_bcond(name='inflow', type=dirichlet,&
          &                 locator=left_of_domain,face='x',dir=-1,canCorrect=.false.)
          call fs%add_bcond(name='outflow',type=clipped_neumann,&
@@ -122,6 +162,18 @@ contains
          call fs%setup(pressure_solver=ps,implicit_solver=vs)
 
          call param_read('Inlet velocity',Uin)
+         chi_p=0.0_WP
+         if (x_end.gt.x_start) then
+            do k=cfg%kmino_,cfg%kmaxo_
+               do j=cfg%jmino_,cfg%jmaxo_
+                  do i=cfg%imino_,cfg%imaxo_
+                     if (cfg%xm(i).ge.x_start.and.cfg%xm(i).lt.x_end.and.&
+                     &   cfg%VF(i,j,k).gt.0.0_WP) chi_p(i,j,k)=1.0_WP
+                  end do
+               end do
+            end do
+         end if
+         call cfg%sync(chi_p)
          fs%U=0.0_WP; fs%V=0.0_WP; fs%W=0.0_WP
          do k=cfg%kmin_,cfg%kmax_
             do j=cfg%jmin_,cfg%jmax_
@@ -148,6 +200,7 @@ contains
       call ens_out%add_vector('velocity',Ui,Vi,Wi)
       call ens_out%add_scalar('pressure',fs%P)
       call ens_out%add_scalar('wall_vf',cfg%VF)
+      call ens_out%add_scalar('porous_mask',chi_p)
       if (ens_evt%occurs()) call ens_out%write_data(time%t)
 
       call fs%get_cfl(time%dt,time%cfl)
@@ -188,6 +241,9 @@ contains
       call flowfile%add_column(p_in,'Inlet pressure')
       call flowfile%add_column(p_out,'Outlet pressure')
       call flowfile%add_column(delta_p,'Pressure drop')
+      call flowfile%add_column(p_upstream,'Upstream sample pressure')
+      call flowfile%add_column(p_downstream,'Downstream sample pressure')
+      call flowfile%add_column(porous_delta_p,'Sample pressure drop')
       call flowfile%write()
    end subroutine simulation_init
 
@@ -205,6 +261,22 @@ contains
             fs%W=0.5_WP*(fs%W+fs%Wold)
 
             call fs%get_dmomdt(resU,resV,resW)
+            add_darcy_resistance: block
+               integer :: i,j,k
+               real(WP) :: chi_face
+               do k=cfg%kmin_,cfg%kmax_
+                  do j=cfg%jmin_,cfg%jmax_
+                     do i=cfg%imin_,cfg%imax_
+                        chi_face=sum(fs%itpr_x(:,i,j,k)*chi_p(i-1:i,j,k))
+                        resU(i,j,k)=resU(i,j,k)-darcy_coeff*chi_face*fs%U(i,j,k)
+                        chi_face=sum(fs%itpr_y(:,i,j,k)*chi_p(i,j-1:j,k))
+                        resV(i,j,k)=resV(i,j,k)-darcy_coeff*chi_face*fs%V(i,j,k)
+                        chi_face=sum(fs%itpr_z(:,i,j,k)*chi_p(i,j,k-1:k))
+                        resW(i,j,k)=resW(i,j,k)-darcy_coeff*chi_face*fs%W(i,j,k)
+                     end do
+                  end do
+               end do
+            end block add_darcy_resistance
             resU=-2.0_WP*(fs%rho*fs%U-fs%rho*fs%Uold)+time%dt*resU
             resV=-2.0_WP*(fs%rho*fs%V-fs%rho*fs%Vold)+time%dt*resV
             resW=-2.0_WP*(fs%rho*fs%W-fs%rho*fs%Wold)+time%dt*resW
@@ -268,7 +340,7 @@ contains
       call simfile%finalize()
       call cflfile%finalize()
       call flowfile%finalize()
-      deallocate(resU,resV,resW,Ui,Vi,Wi)
+      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p)
    end subroutine simulation_final
 
 end module simulation

@@ -27,6 +27,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - The thesis-owned `Thesis/simulations/srp_channel` case now implements a 3D rectangular open channel with explicit inflow/outflow, stationary immersed walls, finite stopping time, flow/pressure outputs, and conservation monitors.
 - Four-rank MPI smoke tests completed on `32 x 12 x 12` and `256 x 64 x 64` meshes. The target run reached `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative mass-flow error about `7e-15`.
 - A provisional `256 x 64 x 64` run completed one flow-through time (`t = 4`) and passed the predeclared final-window numerical convergence rule: pressure-drop range/mean `0.123082%`, maximum relative mass-flow error `1.84374e-14`, maximum CFL `0.247208`, and maximum divergence `2.65364e-13`.
+- A Darcy-only porous mask and momentum source are implemented. Paired uniform control/slab runs reproduce the Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -42,7 +43,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Confirm the physical contactor dimensions and operating conditions, then repeat the documented target-mesh convergence check with those inputs and assess physical plausibility. Do not add porous bead rods until this quantitative baseline is accepted.
+Add and independently verify the Forchheimer term, then fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available. Keep the synthetic Darcy verification coefficients separate from physical cases.
 
 ### Success criteria
 

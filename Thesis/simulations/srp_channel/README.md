@@ -23,7 +23,8 @@ No porous-medium or bead-rod model has been added.
 - Stationary rectangular immersed-boundary walls in `y` and `z`.
 - FFT pressure solution using periodic padded regions outside the immersed walls, following the approach used by NGA2's pipe example.
 - Constant-density, constant-viscosity incompressible flow.
-- Finite end time, Ensight velocity/pressure/wall-volume-fraction output, CFL and solver monitors, inlet/outlet mass-flow balance, and area-averaged pressure drop.
+- Optional Darcy-only porous slab selected by streamwise bounds and permeability.
+- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, and area-averaged pressure drops at the domain boundaries and configurable sample planes.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
 
@@ -62,6 +63,12 @@ The `2026-10-16_open_channel_target_provisional` run advanced the target mesh to
 
 Over `t = 3` to `4`, the mean provisional pressure drop was `1.80368173653`, its range/mean was `0.123082%`, and maximum relative mass-flow error was `1.84374e-14`. Full-run maximum CFL and divergence were `0.247208` and `2.65364e-13`. This establishes numerical convergence for the provisional setup only. See the dated run README and monitors for the preserved evidence.
 
+## Darcy slab verification (2026-10-16)
+
+The paired `2026-10-16_darcy_uniform_control` and `2026-10-16_darcy_uniform_verification` runs test the Darcy source in a fully open periodic cross-section. With `mu = alpha = 0.01`, `Lp = 1`, and `U = 1`, Project Eq. P1 predicts an excess pressure drop of `1`. The simulation produced exactly `1` within printed precision, with zero final-window variation and mass-flow error. The successful run also exports the cell-centered `porous_mask` for geometry inspection.
+
+This verification coefficient is intentionally synthetic. It is not a bead-rod material value and must not be used for physical predictions.
+
 ## Next work (not implemented)
 
-Confirm the physical geometry and wind-tunnel operating conditions, rerun the documented convergence check with those inputs, and assess physical plausibility. Porous resistance begins only after that quantitative baseline is accepted.
+Obtain the bead-filled-sheet pressure-drop data, then fit permeability and add the Forchheimer term as a separate verified increment. Do not interpret the synthetic verification coefficient as an SRP material property.
