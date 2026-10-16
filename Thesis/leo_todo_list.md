@@ -4,13 +4,14 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 **Priority:** Get the pure-flow pressure drop simulation running first. It can run on the side while the adsorption model is worked out.
 
-## Progress snapshot (2026-10-12)
+## Progress snapshot (2026-10-16)
 
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
 - **Completed:** The radial paper's introduction, literature overview, and governing adsorption equations have been reviewed and documented in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
 - **Completed:** A separate thesis-owned 3D SRP case now builds and completes finite MPI smoke tests with explicit inflow/outflow on debug and target `256 x 64 x 64` meshes.
 - **Completed:** The target-mesh Ensight output has been opened and inspected successfully in ParaView, including the fluid passage, velocity, pressure, and wall-volume-fraction fields.
-- **Next milestone:** Replace provisional dimensions and operating conditions, then establish a converged empty-channel baseline before adding porous resistance.
+- **Completed:** The provisional target-mesh setup ran for one flow-through time and met its documented numerical convergence rule; this is not yet a physical pressure-drop prediction.
+- **Next milestone:** Replace provisional dimensions and operating conditions, then repeat and accept the converged empty-channel baseline before adding porous resistance.
 - **Current blockers:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and Justin's through-sheet pressure-drop data are still outstanding.
 
 ## 1. Get set up
@@ -25,7 +26,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [x] Run it first as a pure open channel with inflow and outflow.
   - Four-rank debug and target-mesh smoke tests completed normally on 2026-10-10. The target run ended at `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative inlet/outlet mass-flow error about `7e-15`.
   - The target-mesh output was successfully visualized in ParaView on 2026-10-12.
-  - The current values are provisional and the short run is not a converged pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
+  - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
 - [ ] Add a porous-medium region by modeling the bead rods as cells with lower permeability than the surrounding open space.
 - [ ] Use Darcy's law for the resistance, along with the correction one of the papers used for bead structures.
 - [ ] Place 4 or 5 rods across the 64-cell width.

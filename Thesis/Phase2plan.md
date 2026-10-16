@@ -23,7 +23,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - `Thesis/simulations/srp_channel` contains the implemented thesis-owned empty-channel case, build configuration, debug/target inputs, and dated run evidence.
 - Four-rank MPI smoke tests have completed on `32 x 12 x 12` and target `256 x 64 x 64` meshes with bounded CFL/divergence and mass-flow balance near machine precision.
 - The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
-- Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary.
+- Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary. The provisional target-mesh setup has now met a documented numerical convergence rule over one flow-through time, but the quantitative baseline still awaits confirmed physical inputs.
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
 - No porous-medium or bead-rod physics has been implemented.
 
@@ -73,7 +73,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
 - [x] Compute mass-flow conservation error using Project Eqs. P4-P5.
 - [x] Inspect the target-mesh geometry and velocity, pressure, and wall-volume-fraction output in ParaView.
-- [ ] Run until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
+- [x] Run the provisional target-mesh setup until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
 - [x] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
 
 **Verify:** CFL remains below its configured limit, the solver residuals remain bounded, inlet and outlet mass flow agree within a documented tolerance, and the measured empty-channel pressure drop is physically plausible.
@@ -151,5 +151,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-Obtain the confirmed physical dimensions and operating conditions, then extend the target-mesh empty-channel run until pressure drop and mass flow satisfy a documented steady or statistically stationary convergence rule. Do not begin the porous model until that remaining Step 3 check passes.
+Obtain the confirmed physical dimensions and operating conditions, then rerun the target-mesh empty channel using the documented convergence rule and assess the pressure drop for physical plausibility. Do not begin the porous model until that quantitative Step 3 baseline is accepted.
 

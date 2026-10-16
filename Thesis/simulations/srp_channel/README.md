@@ -4,7 +4,7 @@ This directory contains the thesis-owned NGA2 case for the Phase 2 pressure-drop
 
 ## Status
 
-The empty 3D channel is implemented and has completed finite four-rank MPI smoke tests on both a debug mesh and the target `256 x 64 x 64` mesh. The tests verify startup, time advancement, bounded CFL/divergence, mass-flow balance, finite termination, and field output. They are not converged pressure-drop predictions because the dimensions and operating conditions remain provisional and the simulated time is short.
+The empty 3D channel is implemented and has completed finite four-rank MPI smoke tests on both a debug mesh and the target `256 x 64 x 64` mesh. A subsequent target-mesh run over one provisional flow-through time met the documented numerical convergence rule. None of these runs is a physical pressure-drop prediction because the dimensions and operating conditions remain provisional.
 
 No porous-medium or bead-rod model has been added.
 
@@ -56,6 +56,12 @@ mpiexec -n 4 ../../nga.dp.gnu.opt.mpi.exe -i input
 
 Both runs reached their configured maximum time and their monitor files contain no NaN or infinity values. The pressure-drop values are transient results from provisional inputs and must not be compared with the `10 Pa` project target.
 
+## Provisional convergence run (2026-10-16)
+
+The `2026-10-16_open_channel_target_provisional` run advanced the target mesh to `t = 4`, one flow-through time based on the provisional `Lx = 4` and `Uin = 1`. The predeclared final-window rule required pressure-drop range/mean no greater than `1%`, relative mass-flow error no greater than `1e-10`, CFL no greater than `0.8`, and finite/bounded solver diagnostics.
+
+Over `t = 3` to `4`, the mean provisional pressure drop was `1.80368173653`, its range/mean was `0.123082%`, and maximum relative mass-flow error was `1.84374e-14`. Full-run maximum CFL and divergence were `0.247208` and `2.65364e-13`. This establishes numerical convergence for the provisional setup only. See the dated run README and monitors for the preserved evidence.
+
 ## Next work (not implemented)
 
-Confirm the physical geometry and wind-tunnel operating conditions, then run the empty case long enough to define and demonstrate a steady or statistically stationary baseline. Porous resistance begins only after that baseline is accepted.
+Confirm the physical geometry and wind-tunnel operating conditions, rerun the documented convergence check with those inputs, and assess physical plausibility. Porous resistance begins only after that quantitative baseline is accepted.
