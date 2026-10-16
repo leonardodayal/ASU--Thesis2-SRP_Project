@@ -23,7 +23,7 @@ No porous-medium or bead-rod model has been added.
 - Stationary rectangular immersed-boundary walls in `y` and `z`.
 - FFT pressure solution using periodic padded regions outside the immersed walls, following the approach used by NGA2's pipe example.
 - Constant-density, constant-viscosity incompressible flow.
-- Optional Darcy-only porous slab selected by streamwise bounds and permeability.
+- Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
 - Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, and area-averaged pressure drops at the domain boundaries and configurable sample planes.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
@@ -69,6 +69,12 @@ The paired `2026-10-16_darcy_uniform_control` and `2026-10-16_darcy_uniform_veri
 
 This verification coefficient is intentionally synthetic. It is not a bead-rod material value and must not be used for physical predictions.
 
+## Forchheimer slab verification (2026-10-16)
+
+The paired `2026-10-16_forchheimer_uniform_control` and `2026-10-16_forchheimer_uniform_verification` runs independently test the quadratic term with negligible Darcy resistance. With `rho = 1`, `C2 = 2`, `Lp = 1`, and `U = 1`, Project Eq. P1 predicts an excess pressure drop of `1`. The simulation produced exactly `1` within printed precision, with zero final-window variation and mass-flow error.
+
+`Forchheimer coefficient` has units of inverse length and defaults to zero when absent so historical inputs remain readable. Its verification value is synthetic and is not an SRP material coefficient.
+
 ## Next work (not implemented)
 
-Obtain the bead-filled-sheet pressure-drop data, then fit permeability and add the Forchheimer term as a separate verified increment. Do not interpret the synthetic verification coefficient as an SRP material property.
+Obtain the bead-filled-sheet pressure-drop data, then fit permeability and inertial resistance with Project Eqs. P1-P2. Do not interpret either synthetic verification coefficient as an SRP material property.

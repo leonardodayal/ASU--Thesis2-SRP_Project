@@ -2,7 +2,7 @@
 
 Purpose: confirm that the production positive-wall-padding path still behaves normally when the porous slab is disabled by equal bounds.
 
-- Base code revision: `c304399`
+- Base code revision: `67ef7fe`
 - Command: `mpiexec -n 4 ../../nga.dp.gnu.opt.mpi.exe -i input`
 - Mesh / decomposition: `32 x 12 x 12` / `4 x 1 x 1`
 - Wall padding: `2` cells

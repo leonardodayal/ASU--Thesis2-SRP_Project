@@ -23,8 +23,8 @@ module simulation
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
-   real(WP), dimension(:,:,:), allocatable :: chi_p
-   real(WP) :: darcy_coeff,x_pressure_up,x_pressure_down
+   real(WP), dimension(:,:,:), allocatable :: chi_p,speed_mag
+   real(WP) :: darcy_coeff,forchheimer_coeff,x_pressure_up,x_pressure_down
    real(WP), target :: mfr_in,mfr_out,mfr_error,p_in,p_out,delta_p
    real(WP), target :: p_upstream,p_downstream,porous_delta_p
 
@@ -118,7 +118,7 @@ contains
    end subroutine sample_pressure_plane
 
    subroutine simulation_init
-      use param, only: param_read
+      use param, only: param_exists,param_read
       implicit none
 
       allocate(resU(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
@@ -128,6 +128,7 @@ contains
       allocate(Vi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(Wi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(chi_p(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
+      allocate(speed_mag(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       time=timetracker(amRoot=cfg%amRoot)
       call param_read('Max timestep size',time%dtmax)
       call param_read('Max cfl number',time%cflmax)
@@ -147,9 +148,13 @@ contains
          call param_read('Porous permeability',alpha)
          call param_read('Porous slab start',x_start)
          call param_read('Porous slab end',x_end)
+         forchheimer_coeff=0.0_WP
+         if (param_exists('Forchheimer coefficient')) &
+         &  call param_read('Forchheimer coefficient',forchheimer_coeff)
          call param_read('Pressure sample upstream',x_pressure_up)
          call param_read('Pressure sample downstream',x_pressure_down)
          if (alpha.le.0.0_WP) error stop 'Porous permeability must be positive'
+         if (forchheimer_coeff.lt.0.0_WP) error stop 'Forchheimer coefficient must be nonnegative'
          if (x_end.lt.x_start) error stop 'Porous slab end must not precede its start'
          darcy_coeff=visc/alpha
          call fs%add_bcond(name='inflow', type=dirichlet,&
@@ -261,22 +266,31 @@ contains
             fs%W=0.5_WP*(fs%W+fs%Wold)
 
             call fs%get_dmomdt(resU,resV,resW)
-            add_darcy_resistance: block
+            add_porous_resistance: block
                integer :: i,j,k
-               real(WP) :: chi_face
+               real(WP) :: chi_face,drag_coeff,speed_face
+               call fs%interp_vel(Ui,Vi,Wi)
+               speed_mag=sqrt(Ui**2+Vi**2+Wi**2)
+               call cfg%sync(speed_mag)
                do k=cfg%kmin_,cfg%kmax_
                   do j=cfg%jmin_,cfg%jmax_
                      do i=cfg%imin_,cfg%imax_
                         chi_face=sum(fs%itpr_x(:,i,j,k)*chi_p(i-1:i,j,k))
-                        resU(i,j,k)=resU(i,j,k)-darcy_coeff*chi_face*fs%U(i,j,k)
+                        speed_face=sum(fs%itpr_x(:,i,j,k)*speed_mag(i-1:i,j,k))
+                        drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
+                        resU(i,j,k)=resU(i,j,k)-drag_coeff*chi_face*fs%U(i,j,k)
                         chi_face=sum(fs%itpr_y(:,i,j,k)*chi_p(i,j-1:j,k))
-                        resV(i,j,k)=resV(i,j,k)-darcy_coeff*chi_face*fs%V(i,j,k)
+                        speed_face=sum(fs%itpr_y(:,i,j,k)*speed_mag(i,j-1:j,k))
+                        drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
+                        resV(i,j,k)=resV(i,j,k)-drag_coeff*chi_face*fs%V(i,j,k)
                         chi_face=sum(fs%itpr_z(:,i,j,k)*chi_p(i,j,k-1:k))
-                        resW(i,j,k)=resW(i,j,k)-darcy_coeff*chi_face*fs%W(i,j,k)
+                        speed_face=sum(fs%itpr_z(:,i,j,k)*speed_mag(i,j,k-1:k))
+                        drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
+                        resW(i,j,k)=resW(i,j,k)-drag_coeff*chi_face*fs%W(i,j,k)
                      end do
                   end do
                end do
-            end block add_darcy_resistance
+            end block add_porous_resistance
             resU=-2.0_WP*(fs%rho*fs%U-fs%rho*fs%Uold)+time%dt*resU
             resV=-2.0_WP*(fs%rho*fs%V-fs%rho*fs%Vold)+time%dt*resV
             resW=-2.0_WP*(fs%rho*fs%W-fs%rho*fs%Wold)+time%dt*resW
@@ -340,7 +354,7 @@ contains
       call simfile%finalize()
       call cflfile%finalize()
       call flowfile%finalize()
-      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p)
+      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag)
    end subroutine simulation_final
 
 end module simulation

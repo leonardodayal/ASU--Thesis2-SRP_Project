@@ -22,6 +22,7 @@ Inlet velocity : 1
 # Darcy-only porous slab. Equal bounds disable the slab for this open case.
 # Permeability has units of length squared; slab bounds use the Lx units.
 Porous permeability : 1
+Forchheimer coefficient : 0
 Porous slab start : 2
 Porous slab end : 2
 Pressure sample upstream : 1

@@ -25,7 +25,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
 - Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary. The provisional target-mesh setup has now met a documented numerical convergence rule over one flow-through time, but the quantitative baseline still awaits confirmed physical inputs.
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
-- A Darcy-only porous slab and exported porous mask are implemented and verified against a uniform analytical reference. Forchheimer resistance, fitted material coefficients, and bead-rod geometry remain pending.
+- A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. Fitted material coefficients and bead-rod geometry remain pending.
 
 ## Assumptions and decisions still needed
 
@@ -81,8 +81,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 ### 4. Add and verify porous resistance
 
 - [x] Add a cell mask `chi_p` that is 1 inside a porous test region and 0 in open fluid.
-- [x] Add and verify the Darcy term first; add the Forchheimer/Ergun inertial term as the next separate increment.
-- [x] Keep permeability as a named input parameter with units documented. Add the inertial resistance as a named input when its term is implemented.
+- [x] Add and verify the Darcy term first, then independently add and verify the Forchheimer inertial term.
+- [x] Keep permeability and inertial resistance as named input parameters with units documented.
 - [x] Run a simple uniform porous slab before creating rods.
 - [x] Compare its simulated pressure gradient with the analytical Darcy prediction.
 - [ ] Fit permeability `alpha` and inertial coefficient `C2` to bead-filled-sheet pressure-drop data using Project Eqs. P1-P2.
@@ -151,5 +151,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-Obtain the bead-filled-sheet pressure-drop data, then add and independently verify the Forchheimer term before fitting permeability and inertial resistance with Project Eqs. P1-P2. Keep synthetic verification coefficients separate from physical cases.
+Obtain the bead-filled-sheet pressure-drop data, then fit permeability and inertial resistance with Project Eqs. P1-P2. Keep synthetic verification coefficients separate from physical cases.
 
