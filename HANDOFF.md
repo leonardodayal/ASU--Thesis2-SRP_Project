@@ -30,6 +30,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A Darcy-only porous mask and momentum source are implemented. Paired uniform control/slab runs reproduce the Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
 - The Forchheimer source is also implemented and independently reproduces its Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
 - A configurable provisional `aligned_rods_z` mask places four separated rods on the target mesh. Each diameter spans six cells in both diameter directions, the rods occupy only the 60-cell open passage, and the short MPI smoke test remains stable and conservative.
+- ParaView inspection of the four-rod smoke-test output confirms that the porous mask resolves four distinct rods. The latest velocity-magnitude slice shows four corresponding lower-velocity bands and faster flow through the gaps, providing qualitative evidence that the porous source is coupled to the velocity field. This is an early-time (`t = 0.02`) visualization, not a converged or calibrated pressure-drop result.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -45,7 +46,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available. Replace the provisional aligned reference parameters before making physical comparisons. After those inputs are fixed, run the first rod case to the predeclared convergence rule and quantify pressure drop and flow maldistribution.
 
 ### Success criteria
 

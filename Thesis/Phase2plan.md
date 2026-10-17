@@ -26,6 +26,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary. The provisional target-mesh setup has now met a documented numerical convergence rule over one flow-through time, but the quantitative baseline still awaits confirmed physical inputs.
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
 - A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. A configurable provisional four-rod aligned mask also passes a target-mesh geometry and solver smoke test. Fitted material coefficients and advisor-selected physical geometry remain pending.
+- ParaView slices from the four-rod smoke test show velocity deficits aligned with all four porous rods and acceleration through the intervening gaps. This confirms qualitative source/flow interaction at the short final time (`t = 0.02`), but does not establish a converged or physically meaningful pressure drop.
 
 ## Assumptions and decisions still needed
 

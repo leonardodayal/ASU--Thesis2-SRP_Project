@@ -80,6 +80,8 @@ The paired `2026-10-16_forchheimer_uniform_control` and `2026-10-16_forchheimer_
 
 The `2026-10-16_aligned_four_rods_target_smoke` case verifies four cylindrical porous rods with axes along `z` on the `256 x 64 x 64` mesh. Each provisional `0.1`-diameter rod is resolved by six cells in both diameter directions, and the exported mask contains four separated groups confined to the 60-cell open passage. The short MPI run remained stable and conserved mass, but it is not converged or physically calibrated.
 
+The preserved ParaView screenshots include the porous-mask geometry and pressure/velocity views. The latest velocity-magnitude slice shows four lower-velocity bands aligned with the rods and faster flow through the gaps. This is qualitative evidence that the Darcy-Forchheimer source affects the velocity field; because the image is from `t = 0.02` with provisional geometry and resistance, it must not be used as a quantitative pressure-drop result.
+
 ## Next work (not implemented)
 
 Obtain confirmed rod dimensions, Marcus's first orientation, and the bead-filled-sheet pressure-drop data. Then fit permeability and inertial resistance with Project Eqs. P1-P2 and replace the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

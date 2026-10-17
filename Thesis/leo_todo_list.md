@@ -14,6 +14,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A Darcy-only porous slab and exported mask reproduce the uniform analytical pressure drop exactly within printed precision.
 - **Completed:** The Forchheimer term independently reproduces its uniform analytical pressure drop exactly within printed precision.
 - **Completed:** A configurable provisional four-rod aligned mask passes target-mesh resolution, placement, wall-clipping, and solver smoke checks.
+- **Completed:** ParaView inspection shows four velocity-deficit bands aligned with the four porous rods and faster flow through the gaps, confirming qualitative porous/velocity coupling at `t = 0.02`. This short transient is not a converged or calibrated pressure-drop result.
 - **Next milestone:** Confirm rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's pressure-drop data arrive.
 - **Current blockers:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and Justin's through-sheet pressure-drop data are still outstanding.
 
