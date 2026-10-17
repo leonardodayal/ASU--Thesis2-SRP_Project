@@ -139,13 +139,16 @@ contains
       create_flow_solver: block
          use incomp_class, only: bcond,dirichlet,clipped_neumann
          type(bcond), pointer :: inflow
-         integer :: i,j,k,n
+         integer :: i,j,k,l,n,n_rods
          real(WP) :: visc,Uin,alpha,x_start,x_end
+         real(WP) :: rod_diameter,rod_span,rod_y,sheet_x
+         character(len=32) :: porous_geometry
 
          fs=incomp(cfg=cfg,name='SRP open channel')
          call param_read('Density',fs%rho)
          call param_read('Dynamic viscosity',visc); fs%visc=visc
          call param_read('Porous permeability',alpha)
+         call param_read('Porous geometry',porous_geometry,default='slab')
          call param_read('Porous slab start',x_start)
          call param_read('Porous slab end',x_end)
          forchheimer_coeff=0.0_WP
@@ -168,16 +171,43 @@ contains
 
          call param_read('Inlet velocity',Uin)
          chi_p=0.0_WP
-         if (x_end.gt.x_start) then
+         select case (trim(porous_geometry))
+         case ('slab')
             do k=cfg%kmino_,cfg%kmaxo_
                do j=cfg%jmino_,cfg%jmaxo_
                   do i=cfg%imino_,cfg%imaxo_
                      if (cfg%xm(i).ge.x_start.and.cfg%xm(i).lt.x_end.and.&
-                     &   cfg%VF(i,j,k).gt.0.0_WP) chi_p(i,j,k)=1.0_WP
+                     &   cfg%VF(i,j,k).gt.0.5_WP) chi_p(i,j,k)=1.0_WP
                   end do
                end do
             end do
-         end if
+         case ('aligned_rods_z')
+            call param_read('Rod count',n_rods)
+            call param_read('Rod diameter',rod_diameter)
+            call param_read('Rod center span',rod_span)
+            call param_read('Rod sheet x',sheet_x)
+            if (n_rods.lt.1) error stop 'Rod count must be positive'
+            if (rod_diameter.le.0.0_WP) error stop 'Rod diameter must be positive'
+            if (rod_span.lt.0.0_WP) error stop 'Rod center span must be nonnegative'
+            do l=1,n_rods
+               if (n_rods.eq.1) then
+                  rod_y=0.0_WP
+               else
+                  rod_y=-0.5_WP*rod_span+real(l-1,WP)*rod_span/real(n_rods-1,WP)
+               end if
+               do k=cfg%kmino_,cfg%kmaxo_
+                  do j=cfg%jmino_,cfg%jmaxo_
+                     do i=cfg%imino_,cfg%imaxo_
+                        if ((cfg%xm(i)-sheet_x)**2+(cfg%ym(j)-rod_y)**2.le.&
+                        &   (0.5_WP*rod_diameter)**2.and.cfg%VF(i,j,k).gt.0.5_WP) &
+                        &   chi_p(i,j,k)=1.0_WP
+                     end do
+                  end do
+               end do
+            end do
+         case default
+            error stop 'Porous geometry must be slab or aligned_rods_z'
+         end select
          call cfg%sync(chi_p)
          fs%U=0.0_WP; fs%V=0.0_WP; fs%W=0.0_WP
          do k=cfg%kmin_,cfg%kmax_

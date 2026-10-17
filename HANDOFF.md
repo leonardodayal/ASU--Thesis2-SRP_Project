@@ -29,6 +29,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A provisional `256 x 64 x 64` run completed one flow-through time (`t = 4`) and passed the predeclared final-window numerical convergence rule: pressure-drop range/mean `0.123082%`, maximum relative mass-flow error `1.84374e-14`, maximum CFL `0.247208`, and maximum divergence `2.65364e-13`.
 - A Darcy-only porous mask and momentum source are implemented. Paired uniform control/slab runs reproduce the Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
 - The Forchheimer source is also implemented and independently reproduces its Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
+- A configurable provisional `aligned_rods_z` mask places four separated rods on the target mesh. Each diameter spans six cells in both diameter directions, the rods occupy only the 60-cell open passage, and the short MPI smoke test remains stable and conservative.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -44,7 +45,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available, then replace the verification slab with the first advisor-selected bead-rod geometry. Keep synthetic verification coefficients separate from physical cases.
+Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 

@@ -25,7 +25,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
 - Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary. The provisional target-mesh setup has now met a documented numerical convergence rule over one flow-through time, but the quantitative baseline still awaits confirmed physical inputs.
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
-- A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. Fitted material coefficients and bead-rod geometry remain pending.
+- A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. A configurable provisional four-rod aligned mask also passes a target-mesh geometry and solver smoke test. Fitted material coefficients and advisor-selected physical geometry remain pending.
 
 ## Assumptions and decisions still needed
 
@@ -93,8 +93,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 ### 5. Create the bead-rod and stacked-sheet geometry
 
-- [ ] Represent 4 or 5 rods across the 64-cell cross-section using the verified porous mask.
-- [ ] Check that rod diameter and spacing are resolved by enough cells; revise the mesh only if this check fails.
+- [x] Represent a provisional four-rod aligned reference across the 64-cell cross-section using the verified porous mask.
+- [x] Check the provisional rod resolution: each diameter spans six target-mesh cells in both diameter directions, and the four masks are separated and unclipped.
 - [ ] Implement only the arrangements selected for the first comparison: aligned, 90-degree rotation, offset, or angled.
 - [ ] Assemble the validated sheet representation into a configurable stack with explicit sheet spacing and contactor depth.
 - [ ] Define packing density from measurable geometry or bead mass/volume rather than an unlabeled tuning factor.

@@ -23,6 +23,7 @@ Inlet velocity : 1
 # Permeability has units of length squared; slab bounds use the Lx units.
 Porous permeability : 1
 Forchheimer coefficient : 0
+Porous geometry : slab
 Porous slab start : 2
 Porous slab end : 2
 Pressure sample upstream : 1

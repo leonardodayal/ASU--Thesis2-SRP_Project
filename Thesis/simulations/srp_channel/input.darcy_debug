@@ -20,6 +20,7 @@ Inlet velocity : 1
 # excess pressure drop mu*Lp*U/alpha = 1 for this verification case.
 Porous permeability : 0.01
 Forchheimer coefficient : 0
+Porous geometry : slab
 Porous slab start : 1.5
 Porous slab end : 2.5
 Pressure sample upstream : 1.4375

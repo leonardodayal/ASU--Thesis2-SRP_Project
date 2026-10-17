@@ -815,7 +815,7 @@ For the current verification geometry, the cell-centered porous mask is
 \begin{cases}
 1,
 &x_{\mathrm{start}}\le x_{m,i}<x_{\mathrm{end}}
-\ \text{and}\ VF_{i,j,k}>0,\\[2mm]
+\ \text{and}\ VF_{i,j,k}>0.5,\\[2mm]
 0,&\text{otherwise}.
 \end{cases}
 }
@@ -823,6 +823,38 @@ For the current verification geometry, the cell-centered porous mask is
 \]
 
 Equal bounds, \(x_{\mathrm{start}}=x_{\mathrm{end}}\), disable the porous region. The same mask is exported as `porous_mask` for visual inspection. Bead-rod geometry will replace only this geometric definition; it will not change the resistance law.
+
+For the provisional `aligned_rods_z` geometry, \(N_r\) cylindrical rods have axes parallel to \(z\), common streamwise center \(x_s\), diameter \(d_r\), and first-to-last center span \(S_r\). Their transverse centers are
+
+\[
+\boxed{
+y_\ell=
+\begin{cases}
+0,&N_r=1,\\[1mm]
+-\dfrac{S_r}{2}
++\dfrac{\ell-1}{N_r-1}S_r,
+&N_r>1,
+\end{cases}
+\qquad \ell=1,\ldots,N_r
+}
+\tag{P16b}
+\]
+
+and the corresponding cell-centered mask is
+
+\[
+\boxed{
+\chi_{p,i,j,k}=1
+\quad\text{if}\quad
+\min_{1\le\ell\le N_r}
+\left[(x_{m,i}-x_s)^2+(y_{m,j}-y_\ell)^2\right]
+\le\left(\frac{d_r}{2}\right)^2
+\quad\text{and}\quad VF_{i,j,k}>0.5,
+}
+\tag{P16c}
+\]
+
+with \(\chi_p=0\) otherwise. The current reference uses \(N_r=4\), \(d_r=0.1\), \(S_r=0.6\), and \(x_s=2\); these values are provisional and do not replace advisor-confirmed geometry.
 
 ### Project Eq. (P17): staggered-face Darcy-Forchheimer source
 
@@ -936,7 +968,7 @@ The predeclared provisional criterion was \(R_{\Delta p,W}\le0.01\), maximum mas
 |---|---|---|
 | Open-channel flow | Paper Eq. (9), adaptation `A2`; Paper Eq. (10) with \(\chi_p=0\); `P20`-`P21` | Implemented and provisionally converged |
 | Porous slab verification | Adaptation `A3`; `P16`-`P19` | Darcy and Forchheimer terms independently verified |
-| Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; replace slab geometry in `P16` | Resistance implemented; rod mask pending |
+| Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; `P16b`-`P16c` | Provisional aligned mask verified; advisor geometry pending |
 | Initial resistance estimate | Paper Eqs. (18)-(19) | Estimate only |
 | Fit Justin's pressure data | `P1`-`P3`, `P19` | Awaiting measured data |
 | Flow validation | `P3`-`P7`, `P14`-`P15`, `P19`-`P21` | Numerical checks implemented; physical validation pending |

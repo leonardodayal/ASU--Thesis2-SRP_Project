@@ -6,7 +6,7 @@ This directory contains the thesis-owned NGA2 case for the Phase 2 pressure-drop
 
 The empty 3D channel is implemented and has completed finite four-rank MPI smoke tests on both a debug mesh and the target `256 x 64 x 64` mesh. A subsequent target-mesh run over one provisional flow-through time met the documented numerical convergence rule. None of these runs is a physical pressure-drop prediction because the dimensions and operating conditions remain provisional.
 
-No porous-medium or bead-rod model has been added.
+Darcy-Forchheimer resistance, a uniform verification slab, and a configurable provisional aligned four-rod mask are implemented. Physical coefficients, confirmed rod dimensions, and advisor-selected arrangements remain pending.
 
 ## Intended layout
 
@@ -24,6 +24,7 @@ No porous-medium or bead-rod model has been added.
 - FFT pressure solution using periodic padded regions outside the immersed walls, following the approach used by NGA2's pipe example.
 - Constant-density, constant-viscosity incompressible flow.
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
+- Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
 - Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, and area-averaged pressure drops at the domain boundaries and configurable sample planes.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
@@ -75,6 +76,10 @@ The paired `2026-10-16_forchheimer_uniform_control` and `2026-10-16_forchheimer_
 
 `Forchheimer coefficient` has units of inverse length and defaults to zero when absent so historical inputs remain readable. Its verification value is synthetic and is not an SRP material coefficient.
 
+## Provisional aligned four-rod geometry (2026-10-16)
+
+The `2026-10-16_aligned_four_rods_target_smoke` case verifies four cylindrical porous rods with axes along `z` on the `256 x 64 x 64` mesh. Each provisional `0.1`-diameter rod is resolved by six cells in both diameter directions, and the exported mask contains four separated groups confined to the 60-cell open passage. The short MPI run remained stable and conserved mass, but it is not converged or physically calibrated.
+
 ## Next work (not implemented)
 
-Obtain the bead-filled-sheet pressure-drop data, then fit permeability and inertial resistance with Project Eqs. P1-P2. Do not interpret either synthetic verification coefficient as an SRP material property.
+Obtain confirmed rod dimensions, Marcus's first orientation, and the bead-filled-sheet pressure-drop data. Then fit permeability and inertial resistance with Project Eqs. P1-P2 and replace the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

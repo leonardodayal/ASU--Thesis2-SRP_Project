@@ -13,7 +13,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** The provisional target-mesh setup ran for one flow-through time and met its documented numerical convergence rule; this is not yet a physical pressure-drop prediction.
 - **Completed:** A Darcy-only porous slab and exported mask reproduce the uniform analytical pressure drop exactly within printed precision.
 - **Completed:** The Forchheimer term independently reproduces its uniform analytical pressure drop exactly within printed precision.
-- **Next milestone:** Fit permeability and inertial resistance when Justin's pressure-drop data arrive, then replace the slab with bead-rod geometry.
+- **Completed:** A configurable provisional four-rod aligned mask passes target-mesh resolution, placement, wall-clipping, and solver smoke checks.
+- **Next milestone:** Confirm rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's pressure-drop data arrive.
 - **Current blockers:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and Justin's through-sheet pressure-drop data are still outstanding.
 
 ## 1. Get set up
@@ -31,7 +32,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
   - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
 - [x] Add a verified porous-medium test region with lower permeability than the surrounding open space. Bead-rod geometry remains pending.
 - [x] Implement and independently verify the Darcy and Forchheimer resistance terms used by the radial paper. Physical coefficients still require Justin's data.
-- [ ] Place 4 or 5 rods across the 64-cell width.
+- [x] Place a provisional four-rod aligned reference across the 64-cell width; replace its dimensions if advisor values differ.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
 
