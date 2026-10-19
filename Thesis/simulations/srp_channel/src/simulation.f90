@@ -19,14 +19,18 @@ module simulation
 
    type(ensight) :: ens_out
    type(event)   :: ens_evt
-   type(monitor) :: simfile,cflfile,flowfile
+   type(monitor) :: simfile,cflfile,flowfile,splitfile
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
    real(WP), dimension(:,:,:), allocatable :: chi_p,speed_mag
    real(WP) :: darcy_coeff,forchheimer_coeff,x_pressure_up,x_pressure_down
+   integer :: n_flow_bands
+   real(WP) :: x_flow_split,y_flow_min,y_flow_max
+   real(WP), dimension(:), allocatable, target :: band_mfr,band_fraction
    real(WP), target :: mfr_in,mfr_out,mfr_error,p_in,p_out,delta_p
    real(WP), target :: p_upstream,p_downstream,porous_delta_p
+   real(WP), target :: split_mfr_sum,split_fraction_sum,flow_maldistribution
 
    public :: simulation_init,simulation_run,simulation_final
 
@@ -90,7 +94,77 @@ contains
       call sample_pressure_plane(x_pressure_up,p_upstream)
       call sample_pressure_plane(x_pressure_down,p_downstream)
       porous_delta_p=p_upstream-p_downstream
+      call sample_flow_bands()
    end subroutine update_diagnostics
+
+   subroutine initialize_flow_split
+      use mpi_f08,  only: MPI_ALLREDUCE,MPI_MIN,MPI_MAX,MPI_SUM,MPI_INTEGER
+      use parallel, only: MPI_REAL_WP
+      integer :: i,j,k,ierr,my_plane_count,plane_count
+      real(WP) :: my_ymin,my_ymax
+
+      my_plane_count=0
+      do i=cfg%imin_,cfg%imax_
+         if (x_flow_split.ge.cfg%x(i).and.x_flow_split.lt.cfg%x(i+1)) &
+         &  my_plane_count=my_plane_count+1
+      end do
+      call MPI_ALLREDUCE(my_plane_count,plane_count,1,MPI_INTEGER,MPI_SUM,cfg%comm,ierr)
+      if (plane_count.eq.0) error stop 'Flow split plane lies outside the domain'
+
+      my_ymin=huge(1.0_WP); my_ymax=-huge(1.0_WP)
+      do k=cfg%kmin_,cfg%kmax_
+         do j=cfg%jmin_,cfg%jmax_
+            do i=cfg%imin_,cfg%imax_
+               if (cfg%VF(i,j,k).gt.0.5_WP) then
+                  my_ymin=min(my_ymin,cfg%y(j))
+                  my_ymax=max(my_ymax,cfg%y(j+1))
+               end if
+            end do
+         end do
+      end do
+      call MPI_ALLREDUCE(my_ymin,y_flow_min,1,MPI_REAL_WP,MPI_MIN,cfg%comm,ierr)
+      call MPI_ALLREDUCE(my_ymax,y_flow_max,1,MPI_REAL_WP,MPI_MAX,cfg%comm,ierr)
+      if (y_flow_max.le.y_flow_min) error stop 'Flow split found no open passage'
+   end subroutine initialize_flow_split
+
+   subroutine sample_flow_bands
+      use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
+      use parallel, only: MPI_REAL_WP
+      integer :: i,j,k,l,ierr
+      real(WP) :: mean_mfr
+      real(WP), dimension(n_flow_bands) :: my_band_mfr
+
+      my_band_mfr=0.0_WP
+      do i=cfg%imin_,cfg%imax_
+         if (x_flow_split.ge.cfg%x(i).and.x_flow_split.lt.cfg%x(i+1)) then
+            do k=cfg%kmin_,cfg%kmax_
+               do j=cfg%jmin_,cfg%jmax_
+                  l=1+int(real(n_flow_bands,WP)*(cfg%ym(j)-y_flow_min)/&
+                  &  (y_flow_max-y_flow_min))
+                  l=max(1,min(n_flow_bands,l))
+                  my_band_mfr(l)=my_band_mfr(l)+fs%rho*fs%U(i,j,k)*&
+                  &  cfg%dy(j)*cfg%dz(k)
+               end do
+            end do
+         end if
+      end do
+      call MPI_ALLREDUCE(my_band_mfr,band_mfr,n_flow_bands,&
+      &                  MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
+      split_mfr_sum=sum(band_mfr)
+      if (abs(split_mfr_sum).gt.tiny(1.0_WP)) then
+         band_fraction=band_mfr/split_mfr_sum
+      else
+         band_fraction=0.0_WP
+      end if
+      split_fraction_sum=sum(band_fraction)
+      mean_mfr=split_mfr_sum/real(n_flow_bands,WP)
+      if (abs(mean_mfr).gt.tiny(1.0_WP)) then
+         flow_maldistribution=sqrt(sum((band_mfr-mean_mfr)**2)/&
+         &  real(n_flow_bands,WP))/abs(mean_mfr)
+      else
+         flow_maldistribution=0.0_WP
+      end if
+   end subroutine sample_flow_bands
 
    subroutine sample_pressure_plane(x_target,p_avg)
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
@@ -156,9 +230,12 @@ contains
          &  call param_read('Forchheimer coefficient',forchheimer_coeff)
          call param_read('Pressure sample upstream',x_pressure_up)
          call param_read('Pressure sample downstream',x_pressure_down)
+         call param_read('Flow split bands',n_flow_bands,default=1)
+         call param_read('Flow split plane',x_flow_split,default=x_pressure_down)
          if (alpha.le.0.0_WP) error stop 'Porous permeability must be positive'
          if (forchheimer_coeff.lt.0.0_WP) error stop 'Forchheimer coefficient must be nonnegative'
          if (x_end.lt.x_start) error stop 'Porous slab end must not precede its start'
+         if (n_flow_bands.lt.1) error stop 'Flow split bands must be positive'
          darcy_coeff=visc/alpha
          call fs%add_bcond(name='inflow', type=dirichlet,&
          &                 locator=left_of_domain,face='x',dir=-1,canCorrect=.false.)
@@ -227,6 +304,8 @@ contains
          call fs%correct_mfr()
          call fs%interp_vel(Ui,Vi,Wi)
          call fs%get_div()
+         allocate(band_mfr(n_flow_bands),band_fraction(n_flow_bands))
+         call initialize_flow_split()
       end block create_flow_solver
 
       ens_out=ensight(cfg=cfg,name='srp_channel')
@@ -280,6 +359,24 @@ contains
       call flowfile%add_column(p_downstream,'Downstream sample pressure')
       call flowfile%add_column(porous_delta_p,'Sample pressure drop')
       call flowfile%write()
+
+      create_split_monitor: block
+         integer :: l
+         character(len=32) :: label
+         splitfile=monitor(cfg%amRoot,'flow_split')
+         call splitfile%add_column(time%n,'Timestep number')
+         call splitfile%add_column(time%t,'Time')
+         do l=1,n_flow_bands
+            write(label,'("Band ",i0," MFR")') l
+            call splitfile%add_column(band_mfr(l),trim(label))
+            write(label,'("Band ",i0," fraction")') l
+            call splitfile%add_column(band_fraction(l),trim(label))
+         end do
+         call splitfile%add_column(split_mfr_sum,'Band MFR sum')
+         call splitfile%add_column(split_fraction_sum,'Fraction sum')
+         call splitfile%add_column(flow_maldistribution,'MFR coefficient of variation')
+         call splitfile%write()
+      end block create_split_monitor
    end subroutine simulation_init
 
    subroutine simulation_run
@@ -376,6 +473,7 @@ contains
          call simfile%write()
          call cflfile%write()
          call flowfile%write()
+         call splitfile%write()
       end do
    end subroutine simulation_run
 
@@ -384,7 +482,8 @@ contains
       call simfile%finalize()
       call cflfile%finalize()
       call flowfile%finalize()
-      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag)
+      call splitfile%finalize()
+      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction)
    end subroutine simulation_final
 
 end module simulation

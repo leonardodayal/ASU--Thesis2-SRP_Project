@@ -30,6 +30,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - A 2026-10-19 email from Justin includes a preliminary plot for a 20-sheet Excellion assembly at 5 mm spacing and requests an empty-packet or single-mesh through-flow measurement by 2026-10-23. The aggregate plot lacks the metadata needed to assign physical porous coefficients, so the calibration blocker is only partially advanced.
 - A calibration-ready fitting tool now implements Project Eqs. P1-P2 with baseline subtraction, uncertainty weighting, calibration/validation splits, and synthetic coefficient-recovery tests. Physical calibration remains pending.
 - Nine uniform-slab NGA2 cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
+- A configurable downstream flow-split monitor implements Project Eqs. P6-P7 over equal-width bands. Its four-band MPI verification conserves total mass flow at monitor precision, preserves symmetry, and remains backward-compatible with historical inputs.
 
 ## Assumptions and decisions still needed
 
@@ -122,7 +123,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [ ] Compare sheet spacing, packing density, contactor length/depth, and selected rod/flow-path arrangements.
 - [ ] Use the same domain, fluid properties, sampling planes, and convergence rule within each controlled comparison.
 - [ ] Record total pressure drop, inlet/outlet mass balance, and runtime for each case.
-- [ ] Save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
+- [x] Implement and numerically verify equal-width downstream flow-split fractions and the Project Eq. P7 coefficient of variation.
+- [ ] Apply the flow-split monitor to converged rod and stacked-sheet cases, and save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
 - [ ] Summarize the results in one table and identify configurations at or below the `10 Pa` hydrodynamic target.
 - [ ] Repeat representative empty and porous cases on systematically coarser and finer meshes. For pressure drop and flow split, calculate the grid-change metric `delta_grid = 100 |phi_fine - phi_coarse| / |phi_fine|` using Project Eq. P15.
 - [ ] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
@@ -155,5 +157,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, add geometry-resolved flow-split and maldistribution diagnostics for rod and future stacked-sheet cases. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
+While physical data are pending, apply the verified flow-split diagnostic to a converged provisional rod case, then add configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
 

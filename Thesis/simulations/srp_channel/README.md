@@ -6,7 +6,7 @@ This directory contains the thesis-owned NGA2 case for the Phase 2 pressure-drop
 
 The empty 3D channel is implemented and has completed finite four-rank MPI smoke tests on both a debug mesh and the target `256 x 64 x 64` mesh. A subsequent target-mesh run over one provisional flow-through time met the documented numerical convergence rule. None of these runs is a physical pressure-drop prediction because the dimensions and operating conditions remain provisional.
 
-Darcy-Forchheimer resistance, a uniform verification slab, and a configurable provisional aligned four-rod mask are implemented. Physical coefficients, confirmed rod dimensions, and advisor-selected arrangements remain pending.
+Darcy-Forchheimer resistance, a uniform verification slab, and a configurable provisional aligned four-rod mask are implemented. A configurable downstream monitor also reports equal-width band mass-flow rates, fractions, their sum, and the Project Eq. P7 coefficient of variation. Physical coefficients, confirmed rod dimensions, and advisor-selected arrangements remain pending.
 
 A dependency-free calibration tool in `tools/` fits baseline-corrected multi-velocity pressure-drop data to Project Eqs. P1-P2, preserves calibration/validation splits, combines measurement and baseline uncertainties, and reports fitted `alpha` and `C2` with residual metrics. Its synthetic test recovers known coefficients to floating-point precision. It has not yet been applied to physical SRP data.
 
@@ -27,7 +27,7 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - Constant-density, constant-viscosity incompressible flow.
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
 - Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
-- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, and area-averaged pressure drops at the domain boundaries and configurable sample planes.
+- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, and equal-width flow-band diagnostics at a configurable downstream plane.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
 
@@ -82,6 +82,12 @@ The paired `2026-10-16_forchheimer_uniform_control` and `2026-10-16_forchheimer_
 
 Nine uniform `32 x 4 x 4` slab cases tested Darcy-only, Forchheimer-only, and combined resistance at velocities `0.5`, `1`, and `2`. Every final-window mean matched Project Eq. P1 exactly within printed precision. Across the set, maximum relative mass-flow error was `9.99201e-16`, maximum CFL was `0.08`, and maximum divergence was `2.68307e-13`. The dated run directory preserves the inputs, monitors, and machine-readable summary. These remain synthetic numerical-verification cases, not physical SRP predictions.
 
+## Flow-split diagnostic verification (2026-10-19)
+
+The `2026-10-19_flow_split_debug` run divides the detected open passage into four equal-width `y` bands at `x = 3`. At the final step, the band rates sum to `0.976562`, consistent with inlet/outlet `0.976563` at monitor precision, the fractions sum to `1.0`, and symmetric band pairs agree. The P7 coefficient of variation is `0.0608306` for this developing wall-bounded profile. A historical input without the new keys also retains its one-band defaults and original pressure-drop result.
+
+The implementation integrates NGA2's staggered `x`-face mass flux directly over each band. It does not multiply by cell volume fraction a second time because the immersed-boundary treatment is already represented in the face velocity; doing so would undercount near-wall flow. `Flow split plane` defaults to the downstream pressure plane, `Flow split bands` defaults to one, and an out-of-domain split plane is rejected at startup.
+
 ## Provisional aligned four-rod geometry (2026-10-16)
 
 The `2026-10-16_aligned_four_rods_target_smoke` case verifies four cylindrical porous rods with axes along `z` on the `256 x 64 x 64` mesh. Each provisional `0.1`-diameter rod is resolved by six cells in both diameter directions, and the exported mask contains four separated groups confined to the 60-cell open passage. The short MPI run remained stable and conserved mass, but it is not converged or physically calibrated.
@@ -90,4 +96,4 @@ The preserved ParaView screenshots include the porous-mask geometry and pressure
 
 ## Next work (not implemented)
 
-Add geometry-resolved flow-split and maldistribution diagnostics for rod and stacked-sheet cases, building on the automated pressure-drop, conservation, and convergence summaries. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Apply the verified flow-split monitor to a converged provisional rod case, then add a configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

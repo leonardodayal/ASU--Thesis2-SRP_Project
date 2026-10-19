@@ -26,6 +26,8 @@ Porous slab start : 2
 Porous slab end : 2
 Pressure sample upstream : 1
 Pressure sample downstream : 3
+Flow split plane : 3
+Flow split bands : 4
 
 # Short finite smoke test.
 Max timestep size : 5e-3

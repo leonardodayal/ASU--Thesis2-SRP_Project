@@ -18,7 +18,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **New measurement evidence:** Justin's 2026-10-19 email includes a preliminary pressure-drop plot for 20 Excellion sheets at 5 mm spacing and requests an empty-packet or single-mesh through-flow test by 2026-10-23. The plot is not sufficient to assign physical porous coefficients because key geometry, baseline, uncertainty, bead-loading, and velocity-definition metadata are absent.
 - **Completed:** A calibration-ready fitting tool now handles baseline subtraction, independent measurement/baseline uncertainties, calibration/validation splits, and Project Eqs. P1-P2 conversion. It recovers known synthetic `alpha` and `C2` values to floating-point precision, including a held-out validation point.
 - **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
-- **Next milestone:** Add geometry-resolved flow-split and maldistribution diagnostics for rod and stacked-sheet cases while awaiting the physical inputs.
+- **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
+- **Next milestone:** Apply the verified flow-split monitor to a converged provisional rod case, then add configurable stacked-sheet geometry while awaiting the physical inputs.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
@@ -39,6 +40,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [x] Place a provisional four-rod aligned reference across the 64-cell width; replace its dimensions if advisor values differ.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
+- [x] Add and verify equal-width downstream flow-split and maldistribution monitoring; geometry-specific rod/sheet comparisons remain pending.
 
 ## 3. Literature review (with Marcus)
 

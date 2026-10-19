@@ -35,6 +35,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - The Excellion plot is aggregate system evidence only. It does not document enough geometry, baseline losses, uncertainty, bead loading, or velocity definition to assign physical NGA2 permeability or inertial-resistance coefficients.
 - A dependency-free calibration tool in `Thesis/simulations/srp_channel/tools` now reads a documented pressure-drop CSV, subtracts the matching baseline, combines measurement and baseline uncertainties, preserves calibration/validation splits, and fits Project Eqs. P1-P2. Its synthetic test recovers `alpha = 0.02 m^2` and `C2 = 1.6 1/m` to floating-point precision, including a held-out validation point.
 - Nine uniform-slab NGA2 cases now verify Darcy-only, Forchheimer-only, and combined pressure-drop scaling at velocities `0.5`, `1`, and `2`. Every final-window mean matches Project Eq. P1 within printed precision; maximum relative mass-flow error is `9.99201e-16`, maximum CFL is `0.08`, and maximum divergence is `2.68307e-13`.
+- A configurable downstream flow-split monitor now reports equal-width band mass-flow rates, fractions, their sums, and the Project Eq. P7 coefficient of variation. Its four-band MPI test conserves total flow at monitor precision and preserves symmetry; a historical input verifies the backward-compatible one-band defaults.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -50,14 +51,14 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Add geometry-resolved flow-split and maldistribution diagnostics for rod and future stacked-sheet cases, building on the automated pressure-drop, conservation, and convergence summaries. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Apply the verified flow-split monitor to a converged provisional rod case, then implement configurable stacked-sheet geometry without inventing physical dimensions. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 
 1. **Completed:** Define a documented input format for pressure-drop data, geometry, fluid properties, uncertainty, and calibration/validation labels.
 2. **Completed:** Recover known Darcy and Forchheimer coefficients from synthetic multi-velocity data within a declared numerical tolerance.
 3. **Completed:** Verify simulated linear, quadratic, and combined porous-pressure-drop scaling against Project Eq. P1 at multiple velocities.
-4. Produce repeatable summaries of pressure drop, mass balance, convergence statistics, and flow maldistribution from preserved run outputs.
+4. **Partially completed:** Pressure drop, mass balance, and equal-width flow maldistribution are emitted to repeatable monitors; a converged rod-case summary remains to be produced.
 5. Keep synthetic verification, preliminary Excellion correlations, and future calibrated SRP coefficients explicitly separated.
 
 ## Planned implementation sequence
