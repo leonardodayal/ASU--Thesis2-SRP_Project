@@ -27,6 +27,9 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
 - A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. A configurable provisional four-rod aligned mask also passes a target-mesh geometry and solver smoke test. Fitted material coefficients and advisor-selected physical geometry remain pending.
 - ParaView slices from the four-rod smoke test show velocity deficits aligned with all four porous rods and acceleration through the intervening gaps. This confirms qualitative source/flow interaction at the short final time (`t = 0.02`), but does not establish a converged or physically meaningful pressure drop.
+- A 2026-10-19 email from Justin includes a preliminary plot for a 20-sheet Excellion assembly at 5 mm spacing and requests an empty-packet or single-mesh through-flow measurement by 2026-10-23. The aggregate plot lacks the metadata needed to assign physical porous coefficients, so the calibration blocker is only partially advanced.
+- A calibration-ready fitting tool now implements Project Eqs. P1-P2 with baseline subtraction, uncertainty weighting, calibration/validation splits, and synthetic coefficient-recovery tests. Physical calibration remains pending.
+- Nine uniform-slab NGA2 cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 
 ## Assumptions and decisions still needed
 
@@ -37,7 +40,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - A bead rod is a porous region inside one mesh sheet; multiple sheets are stacked along the contactor flow path. Keep rod-scale arrangement and sheet-scale spacing/depth as separate geometry parameters.
 - Physical channel dimensions, fluid properties, inlet velocity/profile, and run duration must be taken from the experiment or agreed with the advisors before quantitative comparison.
 - Marcus must prioritize the first rod orientations.
-- Justin's through-sheet pressure-drop data is required to fit the final porous coefficients. An Ergun estimate may be used only as a clearly labeled provisional value.
+- Calibration-quality empty-mesh and bead-filled-sheet pressure-drop data, including geometry, baseline losses, velocity definition, and uncertainty, are required to fit the final porous coefficients. An Ergun estimate or the preliminary Excellion system correlation may be used only as a clearly labeled provisional value.
 
 ## Work plan
 
@@ -152,5 +155,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-Obtain the bead-filled-sheet pressure-drop data, then fit permeability and inertial resistance with Project Eqs. P1-P2. Keep synthetic verification coefficients separate from physical cases.
+While physical data are pending, add geometry-resolved flow-split and maldistribution diagnostics for rod and future stacked-sheet cases. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
 

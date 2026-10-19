@@ -1,0 +1,10 @@
+case,physics,velocity,expected_pressure_drop,mean_pressure_drop,relative_error,range_over_mean,max_mass_flow_error,max_cfl,max_divergence
+darcy_u0p5,darcy,0.5,0.5,0.5,0.0,0.0,0.0,0.02,0.0
+darcy_u1,darcy,1.0,1.0,1.0,0.0,0.0,0.0,0.04,0.0
+darcy_u2,darcy,2.0,2.0,2.0,0.0,0.0,4.44089e-16,0.08,1.47438e-13
+forchheimer_u0p5,forchheimer,0.5,0.25,0.25,0.0,0.0,0.0,0.02,0.0
+forchheimer_u1,forchheimer,1.0,1.0,1.0,0.0,0.0,0.0,0.04,0.0
+forchheimer_u2,forchheimer,2.0,4.0,4.0,0.0,0.0,4.44089e-16,0.08,1.10134e-13
+combined_u0p5,combined,0.5,0.75,0.75,0.0,0.0,0.0,0.02,0.0
+combined_u1,combined,1.0,2.0,2.0,0.0,0.0,0.0,0.04,0.0
+combined_u2,combined,2.0,6.0,6.0,0.0,0.0,9.99201e-16,0.08,2.68307e-13

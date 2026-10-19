@@ -4,7 +4,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 **Priority:** Get the pure-flow pressure drop simulation running first. It can run on the side while the adsorption model is worked out.
 
-## Progress snapshot (2026-10-16)
+## Progress snapshot (2026-10-19)
 
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
 - **Completed:** The radial paper's introduction, literature overview, and governing adsorption equations have been reviewed and documented in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
@@ -15,8 +15,11 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** The Forchheimer term independently reproduces its uniform analytical pressure drop exactly within printed precision.
 - **Completed:** A configurable provisional four-rod aligned mask passes target-mesh resolution, placement, wall-clipping, and solver smoke checks.
 - **Completed:** ParaView inspection shows four velocity-deficit bands aligned with the four porous rods and faster flow through the gaps, confirming qualitative porous/velocity coupling at `t = 0.02`. This short transient is not a converged or calibrated pressure-drop result.
-- **Next milestone:** Confirm rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's pressure-drop data arrive.
-- **Current blockers:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and Justin's through-sheet pressure-drop data are still outstanding.
+- **New measurement evidence:** Justin's 2026-10-19 email includes a preliminary pressure-drop plot for 20 Excellion sheets at 5 mm spacing and requests an empty-packet or single-mesh through-flow test by 2026-10-23. The plot is not sufficient to assign physical porous coefficients because key geometry, baseline, uncertainty, bead-loading, and velocity-definition metadata are absent.
+- **Completed:** A calibration-ready fitting tool now handles baseline subtraction, independent measurement/baseline uncertainties, calibration/validation splits, and Project Eqs. P1-P2 conversion. It recovers known synthetic `alpha` and `C2` values to floating-point precision, including a held-out validation point.
+- **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
+- **Next milestone:** Add geometry-resolved flow-split and maldistribution diagnostics for rod and stacked-sheet cases while awaiting the physical inputs.
+- **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
 
@@ -57,6 +60,6 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 ## Waiting on others
 
-- **Justin:** pressure-drop data for flow *through* the sheet (empty sheets and sheets with beads), needed soon for Darcy's law. Other configurations (along the sheet) come later.
+- **Justin/experimental team:** raw pressure-drop data and metadata for flow *through* the empty holder, empty mesh, and bead-filled sheets. A measurement request is active for 2026-10-23; other configurations with flow along normally mounted packets come later.
 - **Justin (possible):** small wind-tunnel experiment on the box of beads for system-level validation.
 - **Sherry:** follow-up note to be sent.

@@ -8,6 +8,8 @@ The empty 3D channel is implemented and has completed finite four-rank MPI smoke
 
 Darcy-Forchheimer resistance, a uniform verification slab, and a configurable provisional aligned four-rod mask are implemented. Physical coefficients, confirmed rod dimensions, and advisor-selected arrangements remain pending.
 
+A dependency-free calibration tool in `tools/` fits baseline-corrected multi-velocity pressure-drop data to Project Eqs. P1-P2, preserves calibration/validation splits, combines measurement and baseline uncertainties, and reports fitted `alpha` and `C2` with residual metrics. Its synthetic test recovers known coefficients to floating-point precision. It has not yet been applied to physical SRP data.
+
 ## Intended layout
 
 - `GNUmakefile`: builds the case against `../../../NGA2`.
@@ -76,6 +78,10 @@ The paired `2026-10-16_forchheimer_uniform_control` and `2026-10-16_forchheimer_
 
 `Forchheimer coefficient` has units of inverse length and defaults to zero when absent so historical inputs remain readable. Its verification value is synthetic and is not an SRP material coefficient.
 
+## Multi-velocity porous-resistance verification (2026-10-19)
+
+Nine uniform `32 x 4 x 4` slab cases tested Darcy-only, Forchheimer-only, and combined resistance at velocities `0.5`, `1`, and `2`. Every final-window mean matched Project Eq. P1 exactly within printed precision. Across the set, maximum relative mass-flow error was `9.99201e-16`, maximum CFL was `0.08`, and maximum divergence was `2.68307e-13`. The dated run directory preserves the inputs, monitors, and machine-readable summary. These remain synthetic numerical-verification cases, not physical SRP predictions.
+
 ## Provisional aligned four-rod geometry (2026-10-16)
 
 The `2026-10-16_aligned_four_rods_target_smoke` case verifies four cylindrical porous rods with axes along `z` on the `256 x 64 x 64` mesh. Each provisional `0.1`-diameter rod is resolved by six cells in both diameter directions, and the exported mask contains four separated groups confined to the 60-cell open passage. The short MPI run remained stable and conserved mass, but it is not converged or physically calibrated.
@@ -84,4 +90,4 @@ The preserved ParaView screenshots include the porous-mask geometry and pressure
 
 ## Next work (not implemented)
 
-Obtain confirmed rod dimensions, Marcus's first orientation, and the bead-filled-sheet pressure-drop data. Then fit permeability and inertial resistance with Project Eqs. P1-P2 and replace the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Add geometry-resolved flow-split and maldistribution diagnostics for rod and stacked-sheet cases, building on the automated pressure-drop, conservation, and convergence summaries. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

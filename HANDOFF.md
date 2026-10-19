@@ -1,6 +1,6 @@
 # Project Handoff
 
-Last updated: 2026-10-16
+Last updated: 2026-10-19
 
 ## Objective
 
@@ -31,6 +31,10 @@ Read the checklist before treating this handoff as current. Update both files wh
 - The Forchheimer source is also implemented and independently reproduces its Project Eq. P1 analytical excess pressure drop of `1` exactly within printed precision.
 - A configurable provisional `aligned_rods_z` mask places four separated rods on the target mesh. Each diameter spans six cells in both diameter directions, the rods occupy only the 60-cell open passage, and the short MPI smoke test remains stable and conservative.
 - ParaView inspection of the four-rod smoke-test output confirms that the porous mask resolves four distinct rods. The latest velocity-magnitude slice shows four corresponding lower-velocity bands and faster flow through the gaps, providing qualitative evidence that the porous source is coupled to the velocity field. This is an early-time (`t = 0.02`) visualization, not a converged or calibrated pressure-drop result.
+- Justin's 2026-10-19 email in `SupportingDocuments/Measure pressure drop through an empty packet in wind tunnel.eml` includes a preliminary plot for a 20-sheet Excellion assembly at 5 mm spacing: `4.5`, `12.7`, `25.8`, `44.3`, and `65.2 Pa` at `1` through `5 m/s`, respectively. The email also requests an empty-packet or single-mesh through-flow measurement by 2026-10-23 with pore size and percent open area recorded.
+- The Excellion plot is aggregate system evidence only. It does not document enough geometry, baseline losses, uncertainty, bead loading, or velocity definition to assign physical NGA2 permeability or inertial-resistance coefficients.
+- A dependency-free calibration tool in `Thesis/simulations/srp_channel/tools` now reads a documented pressure-drop CSV, subtracts the matching baseline, combines measurement and baseline uncertainties, preserves calibration/validation splits, and fits Project Eqs. P1-P2. Its synthetic test recovers `alpha = 0.02 m^2` and `C2 = 1.6 1/m` to floating-point precision, including a held-out validation point.
+- Nine uniform-slab NGA2 cases now verify Darcy-only, Forchheimer-only, and combined pressure-drop scaling at velocities `0.5`, `1`, and `2`. Every final-window mean matches Project Eq. P1 within printed precision; maximum relative mass-flow error is `9.99201e-16`, maximum CFL is `0.08`, and maximum divergence is `2.68307e-13`.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -46,22 +50,21 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when Justin's bead-filled-sheet pressure-drop data are available. Replace the provisional aligned reference parameters before making physical comparisons. After those inputs are fixed, run the first rod case to the predeclared convergence rule and quantify pressure drop and flow maldistribution.
+Add geometry-resolved flow-split and maldistribution diagnostics for rod and future stacked-sheet cases, building on the automated pressure-drop, conservation, and convergence summaries. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 
-1. Replace all provisional geometry, fluid, and inlet values with confirmed dimensional inputs and provenance.
-2. Define a convergence rule for pressure drop and mass flow before the quantitative run.
-3. Run long enough to meet that rule while maintaining bounded CFL, divergence, and solver behavior.
-4. Verify inlet and outlet mass flow against a stated tolerance.
-5. Inspect pressure, velocity, and wall-volume-fraction fields in Ensight-compatible post-processing.
-6. Preserve the input, command, code revision, runtime, and key diagnostics in a dated run directory.
+1. **Completed:** Define a documented input format for pressure-drop data, geometry, fluid properties, uncertainty, and calibration/validation labels.
+2. **Completed:** Recover known Darcy and Forchheimer coefficients from synthetic multi-velocity data within a declared numerical tolerance.
+3. **Completed:** Verify simulated linear, quadratic, and combined porous-pressure-drop scaling against Project Eq. P1 at multiple velocities.
+4. Produce repeatable summaries of pressure drop, mass balance, convergence statistics, and flow maldistribution from preserved run outputs.
+5. Keep synthetic verification, preliminary Excellion correlations, and future calibrated SRP coefficients explicitly separated.
 
 ## Planned implementation sequence
 
 1. **Completed:** Create and smoke-test the 3D open-channel case.
-2. Add tagged porous bead-rod cells.
-3. Add Darcy-Forchheimer resistance based on radial-paper Eq. (10).
+2. **Completed:** Add tagged porous bead-rod cells.
+3. **Completed:** Add and independently verify Darcy-Forchheimer resistance based on radial-paper Eq. (10).
 4. Use radial-paper Eqs. (18)-(19) only as initial estimates.
 5. Fit permeability and inertial resistance to Justin's measured pressure-drop data.
 6. Place four or five rods and compare the orientations selected by Marcus.
@@ -87,7 +90,7 @@ Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeab
 ## External blockers and questions
 
 - **Justin/Marcus:** confirmed contactor dimensions, inlet/airflow conditions, and pressure-tap locations for the quantitative empty-channel baseline.
-- **Justin:** through-sheet pressure-drop data for empty sheets and bead-filled sheets.
+- **Justin/experimental team:** raw through-sheet pressure-drop data and metadata for the empty holder, empty mesh, and bead-filled sheets. A measurement request is active for 2026-10-23; the preliminary Excellion plot is not sufficient for porous-coefficient calibration.
 - **Marcus:** which rod orientations should be simulated first.
 - **Justin, possible:** wind-tunnel test of the bead box for system-level validation.
 - **Material data:** SRP bead isotherm, kinetic, humidity, and thermal properties required for a validated adsorption/regeneration model.
