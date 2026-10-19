@@ -31,6 +31,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - A calibration-ready fitting tool now implements Project Eqs. P1-P2 with baseline subtraction, uncertainty weighting, calibration/validation splits, and synthetic coefficient-recovery tests. Physical calibration remains pending.
 - Nine uniform-slab NGA2 cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 - A configurable downstream flow-split monitor implements Project Eqs. P6-P7 over equal-width bands. Its four-band MPI verification conserves total mass flow at monitor precision, preserves symmetry, and remains backward-compatible with historical inputs.
+- A provisional aligned four-rod run has completed one flow-through time and passes the numerical convergence rule. Its stable, symmetric four-band output verifies use on rod geometry, but a matching open-channel band baseline is still needed to isolate rod-induced maldistribution from wall-profile effects.
 
 ## Assumptions and decisions still needed
 
@@ -157,5 +158,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, apply the verified flow-split diagnostic to a converged provisional rod case, then add configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
+While physical data are pending, run the matching converged open-channel four-band baseline to isolate the provisional rods' incremental maldistribution, then add configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
 

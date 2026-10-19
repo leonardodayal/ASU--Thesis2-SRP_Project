@@ -94,6 +94,12 @@ The `2026-10-16_aligned_four_rods_target_smoke` case verifies four cylindrical p
 
 The preserved ParaView screenshots include the porous-mask geometry and pressure/velocity views. The latest velocity-magnitude slice shows four lower-velocity bands aligned with the rods and faster flow through the gaps. This is qualitative evidence that the Darcy-Forchheimer source affects the velocity field; because the image is from `t = 0.02` with provisional geometry and resistance, it must not be used as a quantitative pressure-drop result.
 
+## Provisional converged four-rod run (2026-10-19)
+
+The `2026-10-19_aligned_four_rods_provisional` case advances the same synthetic four-rod geometry through one flow-through time and applies the four-band diagnostic at `x = 3`. Over `t = 3` to `4`, total pressure-drop range/mean is `0.117198%`, maximum relative mass-flow error is `1.91038e-14`, maximum CFL is `0.246105`, and maximum divergence is `2.61609e-13`. It therefore passes the same numerical rule as the provisional open channel.
+
+The mean band fractions are `0.178338`, `0.321662`, `0.321662`, and `0.178338`; mean P7 coefficient of variation is `0.286648` with final-window range/mean `0.103262%`. The exact band-pair symmetry is a useful implementation check. However, the developed wall profile also shifts flow toward the inner bands, so a paired converged open-channel run with the same monitor is still required before attributing the CV difference to the rods.
+
 ## Next work (not implemented)
 
-Apply the verified flow-split monitor to a converged provisional rod case, then add a configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Run a paired converged open-channel case with the same four-band monitor to isolate the provisional rods' incremental maldistribution, then add a configurable stacked-sheet geometry without assigning unconfirmed physical dimensions. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
