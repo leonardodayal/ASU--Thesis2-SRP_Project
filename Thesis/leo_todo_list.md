@@ -2,7 +2,7 @@
 
 Based on the meeting with Justin Flory and Marcus Herrmann.
 
-**Priority:** Get the pure-flow pressure drop simulation running first. It can run on the side while the adsorption model is worked out.
+**Priority:** Finish the remaining hydrodynamic diagnostics while physical geometry and calibration data are pending, then calibrate and validate the pressure-drop model before adding adsorption.
 
 ## Progress snapshot (2026-10-19)
 
@@ -38,14 +38,18 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
   - Four-rank debug and target-mesh smoke tests completed normally on 2026-10-10. The target run ended at `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative inlet/outlet mass-flow error about `7e-15`.
   - The target-mesh output was successfully visualized in ParaView on 2026-10-12.
   - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
-- [x] Add a verified porous-medium test region with lower permeability than the surrounding open space. Bead-rod geometry remains pending.
+- [x] Add a verified porous-medium test region with lower permeability than the surrounding open space.
+  - Uniform-slab, single-sheet rod, and provisional stacked-sheet masks are implemented and verified. Their current dimensions and resistance values remain synthetic.
 - [x] Implement and independently verify the Darcy and Forchheimer resistance terms used by the radial paper. Physical coefficients still require Justin's data.
 - [x] Place a provisional four-rod aligned reference across the 64-cell width; replace its dimensions if advisor values differ.
 - [x] Assemble the aligned reference into a configurable provisional stack with explicit sheet count, spacing, stack center, and derived streamwise depth.
+- [x] Add per-sheet pressure sampling and verify that the sheet drops sum to the sampled whole-stack drop.
+  - In the three-sheet smoke test, final transient sheet drops `0.765813`, `0.765851`, and `0.765825` sum to the stack value `2.29749` with zero closure error at monitor precision.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
 - [x] Add and verify equal-width downstream flow-split and maldistribution monitoring; geometry-specific rod/sheet comparisons remain pending.
   - Matched converged open and provisional aligned four-rod cases now isolate the rods' incremental pressure-drop and four-band flow-split effects.
+- [ ] Extend flow-split and Project Eq. P7 maldistribution reporting to every sheet plane in a stack.
 
 ## 3. Literature review (with Marcus)
 
@@ -55,11 +59,13 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
   - Documented the paper's original Eqs. (1)-(27), explicit SRP/NGA2 adaptations, and project-added equations in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
 - [ ] Check the papers it cites to see whether that model applies to these specific beads.
 
-## 4. Later, once the flow setup is running
+## 4. Coupled transport and experimental validation
 
-- [ ] Add the CO2, moisture, and temperature equations on top of the flow model as a source term.
-- [ ] Treat regeneration with humid air as the same submodel with the sign flipped, driven by the water concentration difference between the beads and outside.
-- [ ] Compare against Justin's experimental pressure drop, then explore packing density, spacing, and thickness.
+- [ ] Calibrate Darcy-Forchheimer coefficients against baseline-corrected empty-mesh and bead-filled-sheet measurements, then validate against held-out airflow rates.
+- [ ] Add CO2 scalar transport after the hydrodynamic model is physically calibrated and validated.
+- [ ] Add bead loading, equilibrium, and adsorption/desorption kinetics using SRP material data; do not model regeneration by manually reversing a source sign.
+- [ ] Add moisture and temperature only after the core CO2-flow coupling is verified.
+- [ ] Compare experimentally supported packing density, spacing, thickness, and advisor-selected arrangements.
 
 ## Things to confirm
 

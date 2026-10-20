@@ -23,8 +23,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - `Thesis/simulations/srp_channel` contains the implemented thesis-owned empty-channel case, build configuration, debug/target inputs, and dated run evidence.
 - Four-rank MPI smoke tests have completed on `32 x 12 x 12` and target `256 x 64 x 64` meshes with bounded CFL/divergence and mass-flow balance near machine precision.
 - The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
-- Work Plan Step 2 is complete. Step 3 is partially complete and remains the current work boundary. The provisional target-mesh setup has now met a documented numerical convergence rule over one flow-through time, but the quantitative baseline still awaits confirmed physical inputs.
-- Physical dimensions and operating conditions remain provisional, and the short smoke tests are not converged pressure-drop predictions.
+- Work Plan Steps 2 and 3 are complete for the provisional numerical model. Steps 4 and 5 are partially complete: resistance scaling, the aligned single-sheet geometry, a provisional stack, matched open/rod runs, and per-sheet pressure accounting are verified, while physical calibration and advisor-selected arrangements remain pending.
+- Physical dimensions and operating conditions remain provisional. The one-flow-through open and single-sheet runs are numerically converged under those provisional inputs; the stacked-sheet runs are short geometry/diagnostic smoke tests rather than converged pressure-drop predictions.
 - A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. A configurable provisional four-rod aligned mask also passes a target-mesh geometry and solver smoke test. Fitted material coefficients and advisor-selected physical geometry remain pending.
 - ParaView slices from the four-rod smoke test show velocity deficits aligned with all four porous rods and acceleration through the intervening gaps. This confirms qualitative source/flow interaction at the short final time (`t = 0.02`), but does not establish a converged or physically meaningful pressure drop.
 - A 2026-10-19 email from Justin includes a preliminary plot for a 20-sheet Excellion assembly at 5 mm spacing and requests an empty-packet or single-mesh through-flow measurement by 2026-10-23. The aggregate plot lacks the metadata needed to assign physical porous coefficients, so the calibration blocker is only partially advanced.
@@ -39,7 +39,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 - Flow is along `x`, so `nx = 256`, `ny = 64`, and `nz = 64`.
 - The new case will live in `Thesis/simulations/srp_channel`; the NGA2 source tree and stock channel baseline will not be modified.
-- The initial milestone is an empty channel. Porous resistance and rods will only be added after that case passes its checks.
+- The empty-channel milestone passed its checks before porous resistance and rods were added. Preserve that verified open case as the baseline for subsequent comparisons.
 - The NGA2 model is the thesis implementation of the CFD work described with Ansys Fluent in the proposal. Confirm with Marcus and Justin that NGA2 results will satisfy the project deliverable.
 - A bead rod is a porous region inside one mesh sheet; multiple sheets are stacked along the contactor flow path. Keep rod-scale arrangement and sheet-scale spacing/depth as separate geometry parameters.
 - Physical channel dimensions, fluid properties, inlet velocity/profile, and run duration must be taken from the experiment or agreed with the advisors before quantitative comparison.
@@ -105,6 +105,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Check the provisional rod resolution: each diameter spans six target-mesh cells in both diameter directions, and the four masks are separated and unclipped.
 - [ ] Implement only the arrangements selected for the first comparison: aligned, 90-degree rotation, offset, or angled.
 - [x] Assemble the validated sheet representation into a configurable stack with explicit sheet count and spacing; derive contactor depth from the first-to-last sheet span plus rod diameter.
+- [x] Add per-sheet pressure drops, their sum, the sampled whole-stack drop, and a closure-error monitor.
 - [ ] Define packing density from measurable geometry or bead mass/volume rather than an unlabeled tuning factor.
 - [x] Output the porous mask with the flow fields so each geometry can be inspected.
 
