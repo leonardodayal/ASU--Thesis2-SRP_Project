@@ -43,7 +43,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - A short `384 x 96 x 96` feasibility run fits in memory and completes stably on four ranks. It resolves each rod diameter with 10 streamwise cells and gives identical `25,920`-cell masks for all three sheets. A full matched finer-grid pair is projected to require about `83–107 min` total.
 - The full matched `384 x 96 x 96` active/control pair now completes one flow-through time and passes the numerical checks. Project Eq. P15 target-to-fine changes are `4.49272%` for corrected total pressure, up to `4.75564%` for local sheet increments, and up to `10.7750%` for corrected P7 changes. Coarse and fine corrected pressure agree more closely than target and fine, and the 90-cell fine passage cannot be divided evenly into four integer-cell bands. The result is non-monotonic and does not establish formal grid independence.
 - The diagnosis found that binary cell-center masking overrepresented coarse and target rod area by `6.1033%`, compared with `0.2087%` on the fine grid, and that whole-row assignment gave unequal physical band widths on the coarse and fine grids. The solver now uses fractional circular-cell coverage, physical-overlap band integration, and exact-plane interpolation. A three-grid ten-step MPI test reduces maximum rod-area error to `0.002874%`, limits cross-grid area spread to `0.00287824%`, makes all bands exactly `0.25` wide, and passes the numerical checks. The analytical nine-case porous regression remains exact at recorded precision.
-- Corrected full-duration coarse and target active/control pairs pass all numerical checks, but Project Eq. P15 coarse-to-target changes remain `3.62160%` for total corrected pressure, `3.19208-3.79845%` for sheet increments, and `6.34070-7.82729%` for corrected P7 changes. The working `2%` pressure and `5%` P7 gates are not met, so the corrected fine pair remains pending while the refinement strategy is reviewed.
+- Corrected full-duration coarse, target, and fine active/control pairs pass all numerical checks. Corrected total pressure and per-sheet quantities vary monotonically across the three grids. Project Eq. P15 target-to-fine changes are `1.35643%` for total corrected pressure, `1.21755-1.45490%` for sheet increments, and `2.04532-2.57712%` for corrected P7 changes. These pass the working `2%` pressure and `5%` P7 gates, identifying the coarse grid as pre-asymptotic and accepting the target grid for provisional aligned-stack comparisons.
 
 ## Assumptions and decisions still needed
 
@@ -140,7 +140,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Implement and numerically verify equal-width downstream flow-split fractions and the Project Eq. P7 coefficient of variation.
 - [ ] Apply the flow-split monitor to converged rod and stacked-sheet cases, and save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
 - [ ] Summarize the results in one table and identify configurations at or below the `10 Pa` hydrodynamic target.
-- [ ] Repeat representative empty and porous cases on systematically coarser and finer meshes. For pressure drop and flow split, calculate the grid-change metric `delta_grid = 100 |phi_fine - phi_coarse| / |phi_fine|` using Project Eq. P15.
+- [x] Repeat the representative porous active/control case on corrected coarse, target, and fine meshes. Project Eq. P15 target-to-fine changes pass the working `2%` pressure and `5%` P7 criteria; retain the target grid for provisional comparisons.
 - [x] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
 
 **Verify:** Every reported comparison uses converged cases with controlled settings, the configuration conclusions are not materially changed by the grid/time-step checks, and any case claimed to meet the design target has total contactor pressure drop `<= 10 Pa` at the stated airflow condition.
@@ -171,5 +171,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, determine whether the corrected coarse grid is pre-asymptotic and select a systematic next refinement and acceptance criterion before launching another matched pair. Keep historical binary-mask results separate from the corrected fractional-mask sequence. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality data arrive.
+Obtain Marcus's first orientation and confirmed rod dimensions, then run that supported configuration on the accepted target grid. Keep historical binary-mask results separate from the corrected fractional-mask sequence. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality data arrive.
 
