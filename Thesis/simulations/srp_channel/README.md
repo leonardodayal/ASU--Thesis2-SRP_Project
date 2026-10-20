@@ -28,7 +28,7 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
 - Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
 - Optional `stacked_aligned_rods_z` geometry that repeats the aligned sheet using configurable sheet count, center-to-center spacing, and stack center. Its streamwise porous depth is `(Sheet count - 1) * Sheet spacing + Rod diameter`.
-- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, and equal-width flow-band diagnostics at a configurable downstream plane.
+- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, per-sheet and whole-stack pressure-drop closure, and equal-width flow-band diagnostics at a configurable downstream plane.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
 
@@ -109,6 +109,12 @@ The `2026-10-19_stacked_three_sheet_target_smoke` case verifies three separated 
 
 The ten-step MPI run completed with final CFL `0.142256`, maximum divergence `2.18902e-13`, relative mass-flow error `3.33206e-15`, and symmetric four-band flow. A historical single-sheet input also reproduces its prior result with the new executable. This verifies geometry construction and short-time stability only; the stack dimensions and resistance remain synthetic.
 
+## Per-sheet pressure diagnostics (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_pressure_smoke` case samples area-averaged pressure on both sides of every sheet. With sample planes halfway between adjacent sheets, final transient sheet drops are `0.765813`, `0.765851`, and `0.765825`; their sum and the sampled whole-stack drop both equal `2.29749`, producing zero closure error at monitor precision. Non-rod and historical single-sheet regression runs also pass.
+
+`Sheet pressure offset` controls the distance from each sheet center. It defaults to half the sheet spacing for a multi-sheet stack and one rod diameter for a single sheet. Multi-sheet sample regions may touch at their shared midpoint but may not overlap.
+
 ## Next work (not implemented)
 
-Add configurable per-sheet pressure-drop diagnostics for the stacked geometry, then verify their accounting on a short MPI run. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Extend the flow-split diagnostic to report the distribution at each sheet, not only one downstream plane, then verify its accounting on the provisional stack. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

@@ -21,6 +21,7 @@ Rod center span : 0.6
 Sheet count : 3
 Sheet spacing : 0.5
 Stack center x : 2
+Sheet pressure offset : 0.25
 Pressure sample upstream : 1
 Pressure sample downstream : 3
 Flow split plane : 3

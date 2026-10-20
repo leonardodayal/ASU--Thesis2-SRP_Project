@@ -21,7 +21,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
 - **Completed:** A matched converged open-channel baseline isolates the provisional rods' effect. The rods reduce four-band CV by `1.06811%` while increasing total pressure drop by `2.65518%`; these are synthetic numerical results, not physical design findings.
 - **Completed:** A configurable provisional stack repeats the verified aligned sheet by sheet count and center-to-center spacing. A three-sheet, four-rods-per-sheet target-mesh smoke test verifies separated masks, no wall clipping, conservative flow, and backward-compatible single-sheet behavior.
-- **Next milestone:** Add and verify per-sheet pressure-drop diagnostics for stacked cases while awaiting the physical inputs.
+- **Completed:** Per-sheet pressure monitors now report every sheet drop, their sum, whole-stack sampled drop, and closure error. The three-sheet smoke test closes exactly at monitor precision and regression tests cover non-rod and historical single-sheet inputs.
+- **Next milestone:** Extend flow-split and maldistribution reporting to every sheet plane while awaiting the physical inputs.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up

@@ -605,6 +605,31 @@ The sample indices are the cells containing the configured upstream and downstre
 
 **Why added:** This defines exactly how simulation pressure drop is calculated for comparison with experiments and documents the discrete volume-fraction weighting used by the implemented monitor.
 
+For a stack with sheet centers \(x_m\) and pressure-sampling offset \(\delta_p\), the implemented per-sheet and whole-stack diagnostics are
+
+\[
+\boxed{
+\Delta p_m=\bar p_A(x_m-\delta_p)-\bar p_A(x_m+\delta_p),
+\qquad
+\Delta p_{\Sigma}=\sum_{m=1}^{N_s}\Delta p_m,
+}
+\tag{P3c}
+\]
+
+\[
+\boxed{
+\Delta p_{\mathrm{stack}}
+=\bar p_A(x_1-\delta_p)-\bar p_A(x_{N_s}+\delta_p),
+\qquad
+\epsilon_{\Delta p}
+=\frac{|\Delta p_{\Sigma}-\Delta p_{\mathrm{stack}}|}
+{\max(|\Delta p_{\mathrm{stack}}|,\epsilon_{\mathrm{mach}})}.
+}
+\tag{P3d}
+\]
+
+For a regularly spaced multi-sheet stack, the default \(\delta_p=S_s/2\) places shared planes halfway between sheets, so the per-sheet differences telescope to the sampled stack pressure drop. A configurable offset supports future experimental tap locations, but overlapping sample regions are rejected.
+
 ### Project Eqs. (P4)-(P5): flow and airflow conservation
 
 \[

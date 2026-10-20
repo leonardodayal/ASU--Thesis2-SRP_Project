@@ -19,7 +19,7 @@ module simulation
 
    type(ensight) :: ens_out
    type(event)   :: ens_evt
-   type(monitor) :: simfile,cflfile,flowfile,splitfile
+   type(monitor) :: simfile,cflfile,flowfile,splitfile,sheetfile
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
@@ -28,9 +28,13 @@ module simulation
    integer :: n_flow_bands
    real(WP) :: x_flow_split,y_flow_min,y_flow_max
    real(WP), dimension(:), allocatable, target :: band_mfr,band_fraction
+   integer :: n_pressure_sheets
+   real(WP), dimension(:), allocatable :: x_sheet_pressure_up,x_sheet_pressure_down
+   real(WP), dimension(:), allocatable, target :: sheet_pressure_up,sheet_pressure_down,sheet_delta_p
    real(WP), target :: mfr_in,mfr_out,mfr_error,p_in,p_out,delta_p
    real(WP), target :: p_upstream,p_downstream,porous_delta_p
    real(WP), target :: split_mfr_sum,split_fraction_sum,flow_maldistribution
+   real(WP), target :: sheet_delta_p_sum,stack_sample_delta_p,sheet_delta_p_closure
 
    public :: simulation_init,simulation_run,simulation_final
 
@@ -95,7 +99,27 @@ contains
       call sample_pressure_plane(x_pressure_down,p_downstream)
       porous_delta_p=p_upstream-p_downstream
       call sample_flow_bands()
+      call sample_sheet_pressures()
    end subroutine update_diagnostics
+
+   subroutine sample_sheet_pressures
+      integer :: m
+
+      if (n_pressure_sheets.eq.0) return
+      do m=1,n_pressure_sheets
+         call sample_pressure_plane(x_sheet_pressure_up(m),sheet_pressure_up(m))
+         call sample_pressure_plane(x_sheet_pressure_down(m),sheet_pressure_down(m))
+      end do
+      sheet_delta_p=sheet_pressure_up-sheet_pressure_down
+      sheet_delta_p_sum=sum(sheet_delta_p)
+      stack_sample_delta_p=sheet_pressure_up(1)-sheet_pressure_down(n_pressure_sheets)
+      if (abs(stack_sample_delta_p).gt.tiny(1.0_WP)) then
+         sheet_delta_p_closure=abs(sheet_delta_p_sum-stack_sample_delta_p)/&
+         &                     abs(stack_sample_delta_p)
+      else
+         sheet_delta_p_closure=0.0_WP
+      end if
+   end subroutine sample_sheet_pressures
 
    subroutine initialize_flow_split
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_MIN,MPI_MAX,MPI_SUM,MPI_INTEGER
@@ -216,7 +240,8 @@ contains
          integer :: i,j,k,l,m,n,n_rods,n_sheets
          real(WP) :: visc,Uin,alpha,x_start,x_end
          real(WP) :: rod_diameter,rod_span,rod_y,sheet_x
-         real(WP) :: sheet_spacing,stack_center_x
+         real(WP) :: sheet_spacing,stack_center_x,sheet_pressure_offset
+         real(WP) :: default_sheet_pressure_offset
          character(len=32) :: porous_geometry
 
          fs=incomp(cfg=cfg,name='SRP open channel')
@@ -233,6 +258,7 @@ contains
          call param_read('Pressure sample downstream',x_pressure_down)
          call param_read('Flow split bands',n_flow_bands,default=1)
          call param_read('Flow split plane',x_flow_split,default=x_pressure_down)
+         n_pressure_sheets=0
          if (alpha.le.0.0_WP) error stop 'Porous permeability must be positive'
          if (forchheimer_coeff.lt.0.0_WP) error stop 'Forchheimer coefficient must be nonnegative'
          if (x_end.lt.x_start) error stop 'Porous slab end must not precede its start'
@@ -277,6 +303,21 @@ contains
             if (rod_diameter.le.0.0_WP) error stop 'Rod diameter must be positive'
             if (rod_span.lt.0.0_WP) error stop 'Rod center span must be nonnegative'
             if (sheet_spacing.lt.0.0_WP) error stop 'Sheet spacing must be nonnegative'
+            if (n_sheets.gt.1) then
+               default_sheet_pressure_offset=0.5_WP*sheet_spacing
+            else
+               default_sheet_pressure_offset=rod_diameter
+            end if
+            call param_read('Sheet pressure offset',sheet_pressure_offset,&
+            &               default=default_sheet_pressure_offset)
+            if (sheet_pressure_offset.le.0.0_WP) &
+            &  error stop 'Sheet pressure offset must be positive'
+            if (n_sheets.gt.1.and.2.0_WP*sheet_pressure_offset.gt.sheet_spacing) &
+            &  error stop 'Sheet pressure sample regions must not overlap'
+            n_pressure_sheets=n_sheets
+            allocate(x_sheet_pressure_up(n_sheets),x_sheet_pressure_down(n_sheets))
+            allocate(sheet_pressure_up(n_sheets),sheet_pressure_down(n_sheets),&
+            &        sheet_delta_p(n_sheets))
             do m=1,n_sheets
                if (n_sheets.eq.1) then
                   sheet_x=stack_center_x
@@ -284,6 +325,8 @@ contains
                   sheet_x=stack_center_x+(real(m-1,WP)-&
                   &       0.5_WP*real(n_sheets-1,WP))*sheet_spacing
                end if
+               x_sheet_pressure_up(m)=sheet_x-sheet_pressure_offset
+               x_sheet_pressure_down(m)=sheet_x+sheet_pressure_offset
                do l=1,n_rods
                   if (n_rods.eq.1) then
                      rod_y=0.0_WP
@@ -396,6 +439,28 @@ contains
          call splitfile%add_column(flow_maldistribution,'MFR coefficient of variation')
          call splitfile%write()
       end block create_split_monitor
+
+      if (n_pressure_sheets.gt.0) then
+         create_sheet_monitor: block
+            integer :: m
+            character(len=32) :: label
+            sheetfile=monitor(cfg%amRoot,'sheet_pressure')
+            call sheetfile%add_column(time%n,'Timestep number')
+            call sheetfile%add_column(time%t,'Time')
+            do m=1,n_pressure_sheets
+               write(label,'("Sheet ",i0," upstream pressure")') m
+               call sheetfile%add_column(sheet_pressure_up(m),trim(label))
+               write(label,'("Sheet ",i0," downstream pressure")') m
+               call sheetfile%add_column(sheet_pressure_down(m),trim(label))
+               write(label,'("Sheet ",i0," pressure drop")') m
+               call sheetfile%add_column(sheet_delta_p(m),trim(label))
+            end do
+            call sheetfile%add_column(sheet_delta_p_sum,'Sheet pressure-drop sum')
+            call sheetfile%add_column(stack_sample_delta_p,'Stack sample pressure drop')
+            call sheetfile%add_column(sheet_delta_p_closure,'Sheet pressure-drop closure')
+            call sheetfile%write()
+         end block create_sheet_monitor
+      end if
    end subroutine simulation_init
 
    subroutine simulation_run
@@ -493,6 +558,7 @@ contains
          call cflfile%write()
          call flowfile%write()
          call splitfile%write()
+         if (n_pressure_sheets.gt.0) call sheetfile%write()
       end do
    end subroutine simulation_run
 
@@ -502,7 +568,10 @@ contains
       call cflfile%finalize()
       call flowfile%finalize()
       call splitfile%finalize()
+      if (n_pressure_sheets.gt.0) call sheetfile%finalize()
       deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction)
+      if (n_pressure_sheets.gt.0) deallocate(x_sheet_pressure_up,x_sheet_pressure_down,&
+      &  sheet_pressure_up,sheet_pressure_down,sheet_delta_p)
    end subroutine simulation_final
 
 end module simulation
