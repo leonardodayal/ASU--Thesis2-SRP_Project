@@ -37,6 +37,8 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - Per-sheet flow-split diagnostics now report equal-width band rates, fractions, and P7 CV after every sheet. A three-sheet smoke test conserves flow at every plane, preserves symmetry, and passes open/single-sheet regressions.
 - The provisional three-sheet stack and matched zero-resistance control completed one flow-through time and pass the numerical convergence rule. Control subtraction shows local sheet-plane pressure increments of `0.0340160`, `0.0421726`, and `0.0463172`; resistance lowers P7 CV relative to control by `3.20851%`, `4.42426%`, and `4.61025%`. The raw downstream CV increase is primarily background wall-profile development.
 - A matched `128 x 32 x 32` resistance-active/control pair passes the same checks. Relative to the `256 x 64 x 64` pair, Project Eq. P15 changes are at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes. A finer-than-target pair is still required for formal grid independence.
+- Halving the target-grid timestep from `0.002` to `0.001` changes total pressure drop by `0.289417%`, sheet drops by at most `0.179043%`, and per-sheet P7 CV by at most `0.207011%`, passing the predeclared `1%` working time-step-sensitivity criterion.
+- A short `384 x 96 x 96` feasibility run fits in memory and completes stably on four ranks. It resolves each rod diameter with 10 streamwise cells and gives identical `25,920`-cell masks for all three sheets. A full matched finer-grid pair is projected to require about `83–107 min` total.
 
 ## Assumptions and decisions still needed
 
@@ -134,7 +136,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [ ] Apply the flow-split monitor to converged rod and stacked-sheet cases, and save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
 - [ ] Summarize the results in one table and identify configurations at or below the `10 Pa` hydrodynamic target.
 - [ ] Repeat representative empty and porous cases on systematically coarser and finer meshes. For pressure drop and flow split, calculate the grid-change metric `delta_grid = 100 |phi_fine - phi_coarse| / |phi_fine|` using Project Eq. P15.
-- [ ] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
+- [x] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
 
 **Verify:** Every reported comparison uses converged cases with controlled settings, the configuration conclusions are not materially changed by the grid/time-step checks, and any case claimed to meet the design target has total contactor pressure drop `<= 10 Pa` at the stated airflow condition.
 
@@ -164,5 +166,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, repeat the representative target-grid resistance-active stack at a smaller maximum timestep and calculate the time-step changes in pressure drop and per-sheet flow maldistribution. A finer-than-target matched pair remains future work for formal grid independence. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality data arrive.
+While physical data are pending, run the full `384 x 96 x 96` matched resistance-active/control pair and calculate Project Eq. P15 across the target and finer grids. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality data arrive.
 

@@ -135,6 +135,14 @@ The `2026-10-19_stacked_three_sheet_control` case preserves the three masks and 
 
 Matched `128 x 32 x 32` active/control runs also complete one flow-through time and pass the numerical checks. Against the `256 x 64 x 64` pair, Project Eq. P15 changes are `3.98685%` for corrected total pressure drop, `3.55237%` to `4.00174%` for local sheet pressure increments, and `1.80770%` to `2.86352%` for sheet-plane P7 CV changes. The conclusions retain their signs. Because the coarse passage has 30 open cells across four bands, it loses exact paired-band symmetry; a finer-than-target run is still needed for formal grid independence.
 
+## Time-step sensitivity (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_dt001` case halves the target-grid maximum timestep from `0.002` to `0.001` with all other inputs unchanged. Relative to the smaller-step result, total pressure drop changes by `0.289417%`, individual sheet drops by `0.166671%` to `0.179043%`, and sheet-plane P7 CV by `0.194141%` to `0.207011%`. All are below the predeclared `1%` working criterion.
+
+## Finer-grid feasibility (2026-10-19)
+
+A short `384 x 96 x 96` run successfully allocates and completes ten steps on four ranks. It resolves each rod diameter with 10 streamwise cells and gives identical `25,920`-cell porous masks for all three separated sheets. Final CFL is `0.219908`, relative mass-flow error is `1.73227e-14`, and maximum divergence is `1.08864e-13`. The projected cost of a full matched active/control pair is about `83–107 min` total.
+
 ## Next work (not implemented)
 
-Run the representative target-grid resistance-active stack at a smaller maximum timestep and calculate time-step changes in its reported quantities. A finer-than-target matched pair remains desirable but is computationally expensive. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Run the full `384 x 96 x 96` matched resistance-active/control pair and calculate Project Eq. P15 across the target and finer grids. Budget roughly `83–107 min` of compute time. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values.

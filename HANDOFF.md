@@ -42,6 +42,8 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A conditional `sheet_flow_split` monitor now reports equal-width band mass flow, fractions, and Project Eq. P7 CV after every sheet. In the three-sheet smoke test, every plane sums to total mass flow with fraction sum `1.0`, paired bands remain symmetric, and open/single-sheet regressions preserve their earlier results.
 - The provisional three-sheet stack completed one flow-through time and passes the numerical convergence rule: total pressure-drop range/mean `0.105332%`, maximum mass-flow error `1.92149e-14`, maximum CFL `0.243918`, and maximum divergence `2.63684e-13`. A matched zero-resistance stack control also converged and exactly reproduces the earlier open-channel mean total pressure drop. Control subtraction gives local sheet-plane pressure increments `0.0340160`, `0.0421726`, and `0.0463172`; resistance lowers P7 CV relative to control by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3.
 - A matched `128 x 32 x 32` resistance-active/control pair passes the numerical checks. Relative to the `256 x 64 x 64` pair, Project Eq. P15 changes are `3.98685%` for corrected total pressure drop, at most `4.00174%` for local sheet increments, and at most `2.86352%` for corrected P7 CV changes. A finer-than-target pair is still needed for formal grid independence.
+- A target-grid time-step sensitivity run halves the maximum timestep from `0.002` to `0.001`. It passes the numerical checks, and the changes are `0.289417%` for total pressure drop, at most `0.179043%` for individual sheet drops, and at most `0.207011%` for per-sheet P7 CV. All pass the predeclared `1%` working criterion.
+- A short `384 x 96 x 96` finer-grid feasibility run allocates and completes stably on four ranks. It resolves each rod diameter with 10 streamwise cells, gives identical `25,920`-cell masks for all three sheets, and ends with CFL `0.219908`, relative mass-flow error `1.73227e-14`, and maximum divergence `1.08864e-13`. A full matched pair is projected at roughly `83–107 min` total.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -57,7 +59,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Repeat the representative target-grid resistance-active stack at a smaller maximum timestep and calculate time-step changes in pressure drop and per-sheet P7 CV. A finer-than-target matched pair remains future work. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable physical data are available.
+Run the full `384 x 96 x 96` matched resistance-active/control pair and calculate Project Eq. P15 across the target and finer grids. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable physical data are available.
 
 ### Success criteria
 

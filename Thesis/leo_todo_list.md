@@ -26,7 +26,9 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** The provisional three-sheet stack completed one flow-through time and passed the convergence rule. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`.
 - **Completed:** The matched zero-resistance three-sheet control completed one flow-through time and reproduced the open-channel total pressure drop. Control subtraction shows that the provisional resistance adds `0.142539` total pressure drop and reduces P7 CV by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3.
 - **Completed:** A matched `128 x 32 x 32` active/control pair gives Project Eq. P15 changes of at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes versus the target pair. A finer-than-target pair is still needed for formal grid independence.
-- **Next milestone:** Repeat the target-grid resistance-active stack with a smaller maximum timestep and quantify time-step sensitivity.
+- **Completed:** Halving the target-grid timestep to `0.001` changes total pressure drop by `0.289417%`, sheet drops by at most `0.179043%`, and per-sheet P7 CV by at most `0.207011%`; all pass the predeclared `1%` working criterion.
+- **Completed:** A short `384 x 96 x 96` feasibility test fits in memory, resolves each rod diameter with 10 streamwise cells, produces identical `25,920`-cell masks for all three sheets, and completes stably. A full matched pair is projected at `83–107 min` total.
+- **Next milestone:** Run the full `384 x 96 x 96` resistance-active/control pair and calculate Project Eq. P15 against the target pair.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
