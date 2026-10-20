@@ -121,6 +121,12 @@ The `2026-10-19_stacked_three_sheet_flow_split_smoke` case applies the same four
 
 The original single downstream monitor is preserved. Non-rod cases create no sheet-specific monitor, and open/single-sheet regression cases reproduce their prior pressure and flow results.
 
+## Provisional converged three-sheet stack (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_provisional` case completed one flow-through time and passes the numerical convergence rule. Over `t = 3` to `4`, mean total pressure drop is `1.94622081836` with range/mean `0.105332%`; maximum relative mass-flow error is `1.92149e-14`, maximum CFL is `0.243918`, and maximum divergence is `2.63684e-13`.
+
+Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`, summing exactly to sampled stack drop `0.649668` at monitor precision. Mean downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920` after sheets 1-3. Total pressure increase above the matched open case is `0.142539` (`7.90267%`), or `2.97632` times the provisional single-sheet increment. These remain synthetic results; a matched zero-resistance stack control is needed to remove streamwise wall-profile development from the per-sheet trends.
+
 ## Next work (not implemented)
 
-Run the provisional three-sheet stack for one flow-through time and summarize final-window per-sheet pressure drops and maldistribution. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Run a matched zero-resistance three-sheet control for one flow-through time to isolate porous-sheet contributions at the same pressure and flow-split planes. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

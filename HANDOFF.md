@@ -40,6 +40,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A configurable `stacked_aligned_rods_z` option repeats the verified aligned sheet by count and center-to-center spacing about a stack center. A three-sheet target-mesh smoke test produces exactly three separated six-cell x groups, four separated six-cell y groups per sheet, `7,680` cells per sheet, and no wall-padding cells. The run is stable and conservative, and the historical single-sheet input remains backward-compatible.
 - A conditional `sheet_pressure` monitor now samples both sides of every rod sheet and reports each pressure drop, their sum, the whole-stack sampled drop, and closure error. The three-sheet test reports final drops `0.765813`, `0.765851`, and `0.765825`; their sum and the stack drop both equal `2.29749` at monitor precision. Non-rod and single-sheet regression tests pass.
 - A conditional `sheet_flow_split` monitor now reports equal-width band mass flow, fractions, and Project Eq. P7 CV after every sheet. In the three-sheet smoke test, every plane sums to total mass flow with fraction sum `1.0`, paired bands remain symmetric, and open/single-sheet regressions preserve their earlier results.
+- The provisional three-sheet stack completed one flow-through time and passes the numerical convergence rule: total pressure-drop range/mean `0.105332%`, maximum mass-flow error `1.92149e-14`, maximum CFL `0.243918`, and maximum divergence `2.63684e-13`. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; mean downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`. These trends still include streamwise wall-profile development.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -55,7 +56,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Run the provisional three-sheet stack for one flow-through time and summarize final-window per-sheet pressure drops and maldistribution. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Run a matched zero-resistance three-sheet control for one flow-through time to isolate porous-sheet effects at the same pressure and flow-split planes. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 

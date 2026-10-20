@@ -23,7 +23,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A configurable provisional stack repeats the verified aligned sheet by sheet count and center-to-center spacing. A three-sheet, four-rods-per-sheet target-mesh smoke test verifies separated masks, no wall clipping, conservative flow, and backward-compatible single-sheet behavior.
 - **Completed:** Per-sheet pressure monitors now report every sheet drop, their sum, whole-stack sampled drop, and closure error. The three-sheet smoke test closes exactly at monitor precision and regression tests cover non-rod and historical single-sheet inputs.
 - **Completed:** Flow split and Project Eq. P7 maldistribution are now reported after every sheet. The three-sheet smoke test conserves each plane's total flow, preserves symmetry, and passes open/single-sheet regressions.
-- **Next milestone:** Run the provisional three-sheet stack for one flow-through time and summarize converged per-sheet pressure and flow-distribution metrics.
+- **Completed:** The provisional three-sheet stack completed one flow-through time and passed the convergence rule. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`.
+- **Next milestone:** Run the matched zero-resistance three-sheet control to isolate porous-sheet effects from streamwise wall-profile development.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
