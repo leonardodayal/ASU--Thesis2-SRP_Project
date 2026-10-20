@@ -25,8 +25,10 @@ module simulation
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
    real(WP), dimension(:,:,:), allocatable :: chi_p,speed_mag
    real(WP) :: darcy_coeff,forchheimer_coeff,x_pressure_up,x_pressure_down
+   integer, parameter :: rod_fraction_subcells=64
    integer :: n_flow_bands
    real(WP) :: x_flow_split,y_flow_min,y_flow_max
+   real(WP), dimension(:), allocatable :: y_band_edge
    real(WP), dimension(:), allocatable, target :: band_mfr,band_fraction
    integer :: n_pressure_sheets
    real(WP), dimension(:), allocatable :: x_sheet_pressure_up,x_sheet_pressure_down
@@ -39,10 +41,37 @@ module simulation
    real(WP), target :: p_upstream,p_downstream,porous_delta_p
    real(WP), target :: split_mfr_sum,split_fraction_sum,flow_maldistribution
    real(WP), target :: sheet_delta_p_sum,stack_sample_delta_p,sheet_delta_p_closure
+   logical :: write_ensight
 
    public :: simulation_init,simulation_run,simulation_final
 
 contains
+
+   pure function circle_cell_fraction(xlo,xhi,ylo,yhi,xc,yc,radius) result(fraction)
+      real(WP), intent(in) :: xlo,xhi,ylo,yhi,xc,yc,radius
+      real(WP) :: fraction,dx_near,dy_near,dx_far,dy_far,xq,yq
+      integer :: ii,jj,n_inside
+
+      dx_near=max(xlo-xc,0.0_WP,xc-xhi)
+      dy_near=max(ylo-yc,0.0_WP,yc-yhi)
+      dx_far=max(abs(xlo-xc),abs(xhi-xc))
+      dy_far=max(abs(ylo-yc),abs(yhi-yc))
+      if (dx_far**2+dy_far**2.le.radius**2) then
+         fraction=1.0_WP
+      else if (dx_near**2+dy_near**2.ge.radius**2) then
+         fraction=0.0_WP
+      else
+         n_inside=0
+         do jj=1,rod_fraction_subcells
+            yq=ylo+(real(jj,WP)-0.5_WP)*(yhi-ylo)/real(rod_fraction_subcells,WP)
+            do ii=1,rod_fraction_subcells
+               xq=xlo+(real(ii,WP)-0.5_WP)*(xhi-xlo)/real(rod_fraction_subcells,WP)
+               if ((xq-xc)**2+(yq-yc)**2.le.radius**2) n_inside=n_inside+1
+            end do
+         end do
+         fraction=real(n_inside,WP)/real(rod_fraction_subcells**2,WP)
+      end if
+   end function circle_cell_fraction
 
    function left_of_domain(pg,i,j,k) result(isIn)
       use pgrid_class, only: pgrid
@@ -140,7 +169,7 @@ contains
    subroutine initialize_flow_split
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_MIN,MPI_MAX,MPI_SUM,MPI_INTEGER
       use parallel, only: MPI_REAL_WP
-      integer :: i,j,k,ierr,my_plane_count,plane_count
+      integer :: i,j,k,l,ierr,my_plane_count,plane_count,iunit
       real(WP) :: my_ymin,my_ymax
 
       my_plane_count=0
@@ -165,6 +194,21 @@ contains
       call MPI_ALLREDUCE(my_ymin,y_flow_min,1,MPI_REAL_WP,MPI_MIN,cfg%comm,ierr)
       call MPI_ALLREDUCE(my_ymax,y_flow_max,1,MPI_REAL_WP,MPI_MAX,cfg%comm,ierr)
       if (y_flow_max.le.y_flow_min) error stop 'Flow split found no open passage'
+      allocate(y_band_edge(0:n_flow_bands))
+      do l=0,n_flow_bands
+         y_band_edge(l)=y_flow_min+real(l,WP)*(y_flow_max-y_flow_min)/&
+         &              real(n_flow_bands,WP)
+      end do
+      if (cfg%amRoot) then
+         open(newunit=iunit,file='monitor/flow_band_geometry.csv',status='replace',&
+         &    action='write')
+         write(iunit,'(a)') 'band,y_min,y_max,width'
+         do l=1,n_flow_bands
+            write(iunit,'(i0,3(",",es24.16))') l,y_band_edge(l-1),y_band_edge(l),&
+            &  y_band_edge(l)-y_band_edge(l-1)
+         end do
+         close(iunit)
+      end if
    end subroutine initialize_flow_split
 
    subroutine sample_flow_bands
@@ -177,7 +221,7 @@ contains
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
       use parallel, only: MPI_REAL_WP
       integer :: i,j,k,l,ierr
-      real(WP) :: mean_mfr
+      real(WP) :: mean_mfr,x_weight,u_sample,row_lo,row_hi,y_overlap
       real(WP), intent(in) :: x_target
       real(WP), dimension(:), intent(out) :: sampled_mfr,sampled_fraction
       real(WP), intent(out) :: mfr_sum,fraction_sum,maldistribution
@@ -186,13 +230,19 @@ contains
       my_band_mfr=0.0_WP
       do i=cfg%imin_,cfg%imax_
          if (x_target.ge.cfg%x(i).and.x_target.lt.cfg%x(i+1)) then
+            x_weight=(x_target-cfg%x(i))/cfg%dx(i)
             do k=cfg%kmin_,cfg%kmax_
                do j=cfg%jmin_,cfg%jmax_
-                  l=1+int(real(n_flow_bands,WP)*(cfg%ym(j)-y_flow_min)/&
-                  &  (y_flow_max-y_flow_min))
-                  l=max(1,min(n_flow_bands,l))
-                  my_band_mfr(l)=my_band_mfr(l)+fs%rho*fs%U(i,j,k)*&
-                  &  cfg%dy(j)*cfg%dz(k)
+                  row_lo=max(cfg%y(j),y_flow_min)
+                  row_hi=min(cfg%y(j+1),y_flow_max)
+                  if (row_hi.le.row_lo) cycle
+                  u_sample=(1.0_WP-x_weight)*fs%U(i,j,k)+&
+                  &        x_weight*fs%U(i+1,j,k)
+                  do l=1,n_flow_bands
+                     y_overlap=max(0.0_WP,min(row_hi,y_band_edge(l))-&
+                     &                    max(row_lo,y_band_edge(l-1)))
+                     my_band_mfr(l)=my_band_mfr(l)+fs%rho*u_sample*y_overlap*cfg%dz(k)
+                  end do
                end do
             end do
          end if
@@ -221,15 +271,19 @@ contains
       real(WP), intent(in) :: x_target
       real(WP), intent(out) :: p_avg
       integer :: i,j,k,ierr
-      real(WP) :: my_p,my_a,area
+      real(WP) :: my_p,my_a,area,x_weight,pv,vf
 
       my_p=0.0_WP; my_a=0.0_WP
       do i=cfg%imin_,cfg%imax_
-         if (x_target.ge.cfg%x(i).and.x_target.lt.cfg%x(i+1)) then
+         if (x_target.ge.cfg%xm(i).and.x_target.lt.cfg%xm(i+1)) then
+            x_weight=(x_target-cfg%xm(i))/(cfg%xm(i+1)-cfg%xm(i))
             do k=cfg%kmin_,cfg%kmax_
                do j=cfg%jmin_,cfg%jmax_
-                  my_p=my_p+fs%P(i,j,k)*cfg%VF(i,j,k)*cfg%dy(j)*cfg%dz(k)
-                  my_a=my_a+cfg%VF(i,j,k)*cfg%dy(j)*cfg%dz(k)
+                  pv=(1.0_WP-x_weight)*fs%P(i,j,k)*cfg%VF(i,j,k)+&
+                  &  x_weight*fs%P(i+1,j,k)*cfg%VF(i+1,j,k)
+                  vf=(1.0_WP-x_weight)*cfg%VF(i,j,k)+x_weight*cfg%VF(i+1,j,k)
+                  my_p=my_p+pv*cfg%dy(j)*cfg%dz(k)
+                  my_a=my_a+vf*cfg%dy(j)*cfg%dz(k)
                end do
             end do
          end if
@@ -261,13 +315,19 @@ contains
 
       create_flow_solver: block
          use incomp_class, only: bcond,dirichlet,clipped_neumann
+         use messager,     only: log
+         use mpi_f08,      only: MPI_ALLREDUCE,MPI_INTEGER,MPI_SUM
+         use parallel,     only: MPI_REAL_WP
          type(bcond), pointer :: inflow
-         integer :: i,j,k,l,m,n,n_rods,n_sheets
+         integer :: i,j,k,l,m,n,n_rods,n_sheets,ierr,iunit
          real(WP) :: visc,Uin,alpha,x_start,x_end
-         real(WP) :: rod_diameter,rod_span,rod_y,sheet_x
+         real(WP) :: rod_diameter,rod_span,rod_y,sheet_x,cell_fraction
          real(WP) :: sheet_spacing,stack_center_x,sheet_pressure_offset
-         real(WP) :: default_sheet_pressure_offset
+         real(WP) :: default_sheet_pressure_offset,nominal_rod_area,max_area_error
+         real(WP), dimension(:,:), allocatable :: my_rod_area,rod_area
+         integer, dimension(:,:), allocatable :: my_partial_cells,partial_cells
          character(len=32) :: porous_geometry
+         character(len=160) :: message
 
          fs=incomp(cfg=cfg,name='SRP open channel')
          call param_read('Density',fs%rho)
@@ -343,6 +403,9 @@ contains
             allocate(x_sheet_pressure_up(n_sheets),x_sheet_pressure_down(n_sheets))
             allocate(sheet_pressure_up(n_sheets),sheet_pressure_down(n_sheets),&
             &        sheet_delta_p(n_sheets))
+            allocate(my_rod_area(n_rods,n_sheets),rod_area(n_rods,n_sheets))
+            allocate(my_partial_cells(n_rods,n_sheets),partial_cells(n_rods,n_sheets))
+            my_rod_area=0.0_WP; my_partial_cells=0
             do m=1,n_sheets
                if (n_sheets.eq.1) then
                   sheet_x=stack_center_x
@@ -358,17 +421,50 @@ contains
                   else
                      rod_y=-0.5_WP*rod_span+real(l-1,WP)*rod_span/real(n_rods-1,WP)
                   end if
-                  do k=cfg%kmino_,cfg%kmaxo_
-                     do j=cfg%jmino_,cfg%jmaxo_
-                        do i=cfg%imino_,cfg%imaxo_
-                           if ((cfg%xm(i)-sheet_x)**2+(cfg%ym(j)-rod_y)**2.le.&
-                           &   (0.5_WP*rod_diameter)**2.and.&
-                           &   cfg%VF(i,j,k).gt.0.5_WP) chi_p(i,j,k)=1.0_WP
+                  do j=cfg%jmino_,cfg%jmaxo_
+                     do i=cfg%imino_,cfg%imaxo_
+                        cell_fraction=circle_cell_fraction(cfg%x(i),cfg%x(i+1),&
+                        &  cfg%y(j),cfg%y(j+1),sheet_x,rod_y,0.5_WP*rod_diameter)
+                        if (i.ge.cfg%imin_.and.i.le.cfg%imax_.and.&
+                        &   j.ge.cfg%jmin_.and.j.le.cfg%jmax_.and.cfg%kproc.eq.1) then
+                           my_rod_area(l,m)=my_rod_area(l,m)+cell_fraction*&
+                           &                    cfg%dx(i)*cfg%dy(j)
+                           if (cell_fraction.gt.0.0_WP.and.cell_fraction.lt.1.0_WP) &
+                           &  my_partial_cells(l,m)=my_partial_cells(l,m)+1
+                        end if
+                        if (cell_fraction.le.0.0_WP) cycle
+                        do k=cfg%kmino_,cfg%kmaxo_
+                           if (cfg%VF(i,j,k).gt.0.5_WP) &
+                           &  chi_p(i,j,k)=max(chi_p(i,j,k),cell_fraction)
                         end do
                      end do
                   end do
                end do
             end do
+            call MPI_ALLREDUCE(my_rod_area,rod_area,n_rods*n_sheets,&
+            &  MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
+            call MPI_ALLREDUCE(my_partial_cells,partial_cells,n_rods*n_sheets,&
+            &  MPI_INTEGER,MPI_SUM,cfg%comm,ierr)
+            nominal_rod_area=acos(-1.0_WP)*(0.5_WP*rod_diameter)**2
+            max_area_error=maxval(abs(100.0_WP*(rod_area/nominal_rod_area-1.0_WP)))
+            write(message,'("Porous mask audit: maximum rod-area error = ",es12.5," percent")') &
+            &  max_area_error
+            call log(trim(message))
+            if (cfg%amRoot) then
+               open(newunit=iunit,file='monitor/geometry_audit.csv',status='replace',&
+               &    action='write')
+               write(iunit,'(a)') 'sheet,rod,nominal_area,represented_area,error_percent,partial_cells'
+               do m=1,n_sheets
+                  do l=1,n_rods
+                     write(iunit,'(i0,",",i0,3(",",es24.16),",",i0)') m,l,&
+                     &  nominal_rod_area,rod_area(l,m),&
+                     &  100.0_WP*(rod_area(l,m)/nominal_rod_area-1.0_WP),&
+                     &  partial_cells(l,m)
+                  end do
+               end do
+               close(iunit)
+            end if
+            deallocate(my_rod_area,rod_area,my_partial_cells,partial_cells)
          case default
             error stop 'Unknown porous geometry'
          end select
@@ -402,14 +498,17 @@ contains
          call initialize_flow_split()
       end block create_flow_solver
 
-      ens_out=ensight(cfg=cfg,name='srp_channel')
-      ens_evt=event(time=time,name='Ensight output')
-      call param_read('Ensight output period',ens_evt%tper)
-      call ens_out%add_vector('velocity',Ui,Vi,Wi)
-      call ens_out%add_scalar('pressure',fs%P)
-      call ens_out%add_scalar('wall_vf',cfg%VF)
-      call ens_out%add_scalar('porous_mask',chi_p)
-      if (ens_evt%occurs()) call ens_out%write_data(time%t)
+      call param_read('Write Ensight output',write_ensight,default=.true.)
+      if (write_ensight) then
+         ens_out=ensight(cfg=cfg,name='srp_channel')
+         ens_evt=event(time=time,name='Ensight output')
+         call param_read('Ensight output period',ens_evt%tper)
+         call ens_out%add_vector('velocity',Ui,Vi,Wi)
+         call ens_out%add_scalar('pressure',fs%P)
+         call ens_out%add_scalar('wall_vf',cfg%VF)
+         call ens_out%add_scalar('porous_mask',chi_p)
+         if (ens_evt%occurs()) call ens_out%write_data(time%t)
+      end if
 
       call fs%get_cfl(time%dt,time%cfl)
       call fs%get_max()
@@ -606,7 +705,9 @@ contains
 
          call fs%interp_vel(Ui,Vi,Wi)
          call fs%get_div()
-         if (ens_evt%occurs()) call ens_out%write_data(time%t)
+         if (write_ensight) then
+            if (ens_evt%occurs()) call ens_out%write_data(time%t)
+         end if
          call fs%get_max()
          call update_diagnostics()
          call simfile%write()
@@ -630,7 +731,8 @@ contains
          call sheetfile%finalize()
          call sheetsplitfile%finalize()
       end if
-      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction)
+      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction,&
+      &          y_band_edge)
       if (n_pressure_sheets.gt.0) deallocate(x_sheet_pressure_up,x_sheet_pressure_down,&
       &  sheet_pressure_up,sheet_pressure_down,sheet_delta_p,sheet_band_mfr,&
       &  sheet_band_fraction,sheet_split_mfr_sum,sheet_split_fraction_sum,&

@@ -1,0 +1,21 @@
+Partition : 4 1 1
+nx : 32
+ny : 4
+nz : 4
+Wall padding cells : 0
+Lx : 4
+Ly : 1
+Lz : 1
+Density : 1.0
+Dynamic viscosity : 0.01
+Inlet velocity : 1.0
+Porous permeability : 0.01
+Forchheimer coefficient : 2.0
+Porous slab start : 1.5
+Porous slab end : 2.5
+Pressure sample upstream : 1.4375
+Pressure sample downstream : 2.5625
+Max timestep size : 5e-3
+Max cfl number : 0.8
+Max time : 4
+Ensight output period : 10

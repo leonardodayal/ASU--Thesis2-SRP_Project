@@ -26,9 +26,9 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - FFT pressure solution using periodic padded regions outside the immersed walls, following the approach used by NGA2's pipe example.
 - Constant-density, constant-viscosity incompressible flow.
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
-- Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
+- Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location. Circular boundary cells use conservative fractional coverage so the represented area remains physically consistent across grids.
 - Optional `stacked_aligned_rods_z` geometry that repeats the aligned sheet using configurable sheet count, center-to-center spacing, and stack center. Its streamwise porous depth is `(Sheet count - 1) * Sheet spacing + Rod diameter`.
-- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, per-sheet and whole-stack pressure-drop closure, and equal-width flow-band diagnostics at both a configurable downstream plane and every sheet's downstream sampling plane.
+- Finite end time, optional Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, interpolated area-averaged pressure drops at exact physical planes, per-sheet and whole-stack pressure-drop closure, and physically equal flow-band diagnostics at both a configurable downstream plane and every sheet's downstream sampling plane.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
 
@@ -87,7 +87,7 @@ Nine uniform `32 x 4 x 4` slab cases tested Darcy-only, Forchheimer-only, and co
 
 The `2026-10-19_flow_split_debug` run divides the detected open passage into four equal-width `y` bands at `x = 3`. At the final step, the band rates sum to `0.976562`, consistent with inlet/outlet `0.976563` at monitor precision, the fractions sum to `1.0`, and symmetric band pairs agree. The P7 coefficient of variation is `0.0608306` for this developing wall-bounded profile. A historical input without the new keys also retains its one-band defaults and original pressure-drop result.
 
-The implementation integrates NGA2's staggered `x`-face mass flux directly over each band. It does not multiply by cell volume fraction a second time because the immersed-boundary treatment is already represented in the face velocity; doing so would undercount near-wall flow. `Flow split plane` defaults to the downstream pressure plane, `Flow split bands` defaults to one, and an out-of-domain split plane is rejected at startup.
+The implementation integrates NGA2's staggered `x`-face mass flux directly over each physical band. A row that crosses a band edge is split by its geometric overlap, so all grids measure the same band widths. It does not multiply by cell volume fraction a second time because the immersed-boundary treatment is already represented in the face velocity; doing so would undercount near-wall flow. `Flow split plane` defaults to the downstream pressure plane, `Flow split bands` defaults to one, and an out-of-domain split plane is rejected at startup. `Write Ensight output` defaults to true and may be disabled for lightweight diagnostic runs.
 
 ## Provisional aligned four-rod geometry (2026-10-16)
 
@@ -141,8 +141,14 @@ The `2026-10-19_stacked_three_sheet_dt001` case halves the target-grid maximum t
 
 ## Finer-grid feasibility (2026-10-19)
 
-A short `384 x 96 x 96` run successfully allocates and completes ten steps on four ranks. It resolves each rod diameter with 10 streamwise cells and gives identical `25,920`-cell porous masks for all three separated sheets. Final CFL is `0.219908`, relative mass-flow error is `1.73227e-14`, and maximum divergence is `1.08864e-13`. The projected cost of a full matched active/control pair is about `83–107 min` total.
+A short `384 x 96 x 96` run successfully allocated and completed ten steps on four ranks. The subsequent full matched active/control pair completed one flow-through time and passes the numerical checks. Active-minus-control gives total excess pressure drop `0.136410538922`, local sheet increments `0.032471768463`, `0.040393670659`, and `0.044265325349`, and P7 CV changes `-0.007432313373`, `-0.010921227545`, and `-0.011863766467`.
+
+Against the target pair, Project Eq. P15 changes are `4.49272%` for corrected total pressure, `4.40392-4.75564%` for local sheet increments, and `10.0345-10.7750%` for corrected P7 changes. Coarse and fine corrected pressure agree within `0.326755%` overall and `0.918400%` locally, so the three-grid pressure sequence is non-monotonic. The fine passage also has 90 open cells, which cannot be split evenly into four integer-cell bands. Formal grid independence is not established.
+
+The subsequent code audit found that the binary mask represented each coarse and target rod with `6.1033%` excess projected area, versus only `0.2087%` on the fine grid. Whole-row flow bands also alternated between unequal widths on the coarse and fine grids. The corrected fractional mask and overlap-weighted bands pass a three-grid, ten-step MPI test: maximum rod-area error is `0.002874%`, cross-grid area spread is `0.00287824%`, every band is exactly `0.25` wide, and all numerical smoke checks pass. The earlier full-duration values must not be mixed with the corrected discretization.
+
+Corrected full-duration coarse and target matched pairs then completed successfully. Active-minus-control total excess pressure is `0.118040415170` and `0.122476005988`, respectively. Project Eq. P15 coarse-to-target changes are `3.62160%` for total pressure, `3.19208-3.79845%` for individual sheet increments, and `6.34070-7.82729%` for corrected P7 changes. These exceed the working `2%` pressure and `5%` P7 gates. A corrected fine pair was therefore not launched.
 
 ## Next work (not implemented)
 
-Run the full `384 x 96 x 96` matched resistance-active/control pair and calculate Project Eq. P15 across the target and finer grids. Budget roughly `83–107 min` of compute time. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values.
+Review whether the corrected coarse grid is pre-asymptotic and choose a systematic next refinement before another matched pair. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values.

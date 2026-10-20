@@ -41,6 +41,21 @@ python3 -m unittest -v test_fit_porous_resistance.py
 
 Do not use the preliminary Excellion plot as physical SRP calibration input. Its geometry, baseline losses, velocity definition, bead loading, and uncertainty are not sufficiently documented.
 
+## Cross-grid geometry verification
+
+`verify_grid_geometry.py` creates coarse, target, and fine initialization or short-flow cases with Ensight output disabled. It verifies the actual solver-emitted rod-area and physical flow-band audits, paired-band symmetry, fraction sums, CFL, divergence, and mass balance. The output directory must not already exist.
+
+From `Thesis/simulations/srp_channel`:
+
+```sh
+python3 tools/verify_grid_geometry.py \
+  --executable ./nga.dp.gnu.opt.mpi.exe \
+  --output-dir runs/YYYY-MM-DD_grid_consistency_smoke \
+  --max-time 0.02
+```
+
+With the default `--max-time 0`, the tool performs initialization-only geometry checks. The production rod mask uses `64 x 64` deterministic subcell samples only in circle-boundary cells; full and empty cells are classified directly. The accepted rod-area and cross-grid-spread tolerance is `0.1%`.
+
 ## NGA2 multi-velocity verification
 
 `verify_porous_scaling.py` runs the uniform `32 x 4 x 4` slab with Darcy-only, Forchheimer-only, and combined resistance at velocities `0.5`, `1`, and `2`. It compares the final-window mean pressure drop with Project Eq. P1, checks mass conservation, and writes a summary CSV. The output directory must not already exist so preserved evidence cannot be overwritten accidentally.

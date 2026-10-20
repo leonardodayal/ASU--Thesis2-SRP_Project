@@ -4,7 +4,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 **Priority:** Finish the remaining hydrodynamic diagnostics while physical geometry and calibration data are pending, then calibrate and validate the pressure-drop model before adding adsorption.
 
-## Progress snapshot (2026-10-19)
+## Progress snapshot (2026-10-20)
 
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
 - **Completed:** The radial paper's introduction, literature overview, and governing adsorption equations have been reviewed and documented in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
@@ -16,6 +16,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A configurable provisional four-rod aligned mask passes target-mesh resolution, placement, wall-clipping, and solver smoke checks.
 - **Completed:** ParaView inspection shows four velocity-deficit bands aligned with the four porous rods and faster flow through the gaps, confirming qualitative porous/velocity coupling at `t = 0.02`. This short transient is not a converged or calibrated pressure-drop result.
 - **New measurement evidence:** Justin's 2026-10-19 email includes a preliminary pressure-drop plot for 20 Excellion sheets at 5 mm spacing and requests an empty-packet or single-mesh through-flow test by 2026-10-23. The plot is not sufficient to assign physical porous coefficients because key geometry, baseline, uncertainty, bead-loading, and velocity-definition metadata are absent.
+- **New measurement evidence:** Ramesh supplied 29 points for two MT 125-micron polyester-mesh layers on a custom 3D-printed stand. Over `0.1-2.9 m/s`, pressure drop is `1.6-75.6 Pa`; the table reproduces `Delta p = 13.3676 U + 4.42639 U^2` Pa with `RMSE = 0.313 Pa` and `R^2 = 0.999805`. The blank `3.0 m/s` row is not a measurement. This characterizes the tested mesh/stand assembly but does not isolate mesh or bead-bed resistance.
+- **Completed:** The 29 measurements and blank `3.0 m/s` source row are transcribed with provenance and measurement status in `SupportingDocuments/PhysicalMeasurments/mt_125_micron_two_layer_raw.csv`; the transcription and fitted coefficients were independently verified on 2026-10-20.
 - **Completed:** A calibration-ready fitting tool now handles baseline subtraction, independent measurement/baseline uncertainties, calibration/validation splits, and Project Eqs. P1-P2 conversion. It recovers known synthetic `alpha` and `C2` values to floating-point precision, including a held-out validation point.
 - **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 - **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
@@ -28,8 +30,13 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A matched `128 x 32 x 32` active/control pair gives Project Eq. P15 changes of at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes versus the target pair. A finer-than-target pair is still needed for formal grid independence.
 - **Completed:** Halving the target-grid timestep to `0.001` changes total pressure drop by `0.289417%`, sheet drops by at most `0.179043%`, and per-sheet P7 CV by at most `0.207011%`; all pass the predeclared `1%` working criterion.
 - **Completed:** A short `384 x 96 x 96` feasibility test fits in memory, resolves each rod diameter with 10 streamwise cells, produces identical `25,920`-cell masks for all three sheets, and completes stably. A full matched pair is projected at `83–107 min` total.
-- **Next milestone:** Run the full `384 x 96 x 96` resistance-active/control pair and calculate Project Eq. P15 against the target pair.
-- **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
+- **Completed:** The full matched `384 x 96 x 96` resistance-active/control pair completed one flow-through time and passes the convergence, CFL, mass-balance, divergence, and pressure-closure checks.
+- **Grid-sensitivity result:** Target-to-fine Project Eq. P15 changes are `4.49272%` for corrected total pressure, at most `4.75564%` for local sheet increments, and at most `10.7750%` for corrected P7 changes. Coarse and fine corrected pressure agree within `0.918400%`, making the three-grid pressure sequence non-monotonic. Formal grid independence is not established.
+- **Completed diagnosis:** The binary mask overrepresented each coarse/target rod area by `6.1033%`, versus `0.2087%` on the fine grid. Whole-cell flow bands also had unequal physical widths on the coarse and fine grids.
+- **Completed correction and smoke verification:** Rod-boundary cells now use fractional coverage, band flux uses physical overlap, and pressure/flow diagnostics interpolate to requested physical planes. Across three ten-step MPI cases, maximum rod-area error is `0.002874%`, cross-grid area spread is `0.00287824%`, all four bands are exactly `0.25` wide, and the numerical checks pass. Nine Darcy/Forchheimer slab regressions still match Project Eq. P1 exactly at recorded precision.
+- **Completed corrected coarse/target gate:** Both full-duration active/control pairs pass the numerical checks. Coarse-to-target Project Eq. P15 changes are `3.62160%` for total corrected pressure, `3.19208-3.79845%` for sheet increments, and `6.34070-7.82729%` for corrected P7 changes. These exceed the working `2%` pressure and `5%` P7 gates, so no corrected fine pair was launched.
+- **Next milestone:** Review whether the coarse grid is pre-asymptotic and select a systematic next refinement before spending on another matched pair. Keep the old binary-mask runs separate from the corrected fractional-mask sequence.
+- **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, an empty-stand baseline and measurement metadata for the new two-layer mesh data, and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
 
@@ -79,6 +86,6 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 ## Waiting on others
 
-- **Justin/experimental team:** raw pressure-drop data and metadata for flow *through* the empty holder, empty mesh, and bead-filled sheets. A measurement request is active for 2026-10-23; other configurations with flow along normally mounted packets come later.
+- **Justin/experimental team:** empty-stand baseline; percent open area; test-section, sample, and pressure-tap geometry; mesh thickness/effective porous length; air properties; uncertainty/repeats; confirmation of the velocity definition; and bead-filled-sheet measurements. The two-layer MT 125-micron mesh/stand data are available, and the 25-micron nylon dataset was promised by 2026-10-23. Configurations with flow along normally mounted packets come later.
 - **Justin (possible):** small wind-tunnel experiment on the box of beads for system-level validation.
 - **Sherry:** follow-up note to be sent.
