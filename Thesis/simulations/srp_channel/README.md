@@ -28,7 +28,7 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
 - Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
 - Optional `stacked_aligned_rods_z` geometry that repeats the aligned sheet using configurable sheet count, center-to-center spacing, and stack center. Its streamwise porous depth is `(Sheet count - 1) * Sheet spacing + Rod diameter`.
-- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, per-sheet and whole-stack pressure-drop closure, and equal-width flow-band diagnostics at a configurable downstream plane.
+- Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, per-sheet and whole-stack pressure-drop closure, and equal-width flow-band diagnostics at both a configurable downstream plane and every sheet's downstream sampling plane.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
 
@@ -115,6 +115,12 @@ The `2026-10-19_stacked_three_sheet_pressure_smoke` case samples area-averaged p
 
 `Sheet pressure offset` controls the distance from each sheet center. It defaults to half the sheet spacing for a multi-sheet stack and one rod diameter for a single sheet. Multi-sheet sample regions may touch at their shared midpoint but may not overlap.
 
+## Per-sheet flow-split diagnostics (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_flow_split_smoke` case applies the same four-band mass-flow and P7 calculation after every sheet. At the final step, each sheet-plane band sum is `0.999583`, each fraction sum is `1.0`, and paired bands remain symmetric. Transient CV values after sheets 1-3 are `0.0182707`, `0.0182705`, and `0.0183899`.
+
+The original single downstream monitor is preserved. Non-rod cases create no sheet-specific monitor, and open/single-sheet regression cases reproduce their prior pressure and flow results.
+
 ## Next work (not implemented)
 
-Extend the flow-split diagnostic to report the distribution at each sheet, not only one downstream plane, then verify its accounting on the provisional stack. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Run the provisional three-sheet stack for one flow-through time and summarize final-window per-sheet pressure drops and maldistribution. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

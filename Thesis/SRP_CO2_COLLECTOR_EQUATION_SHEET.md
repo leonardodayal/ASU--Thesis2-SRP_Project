@@ -689,7 +689,7 @@ CV_{\dot m}
 
 **Why added:** Paper Eq. (26) is specific to its radial geometry. `P7` measures flow maldistribution among SRP rods or levels without assuming a radial inlet and outlet.
 
-**Current NGA2 implementation:** At a configurable `x`-face, the detected open passage is divided into `N` equal-width `y` bands. Each \(\dot m_\ell\) is the sum of \(\rho U\,\Delta y\,\Delta z\) over the staggered faces in that band. NGA2's immersed-boundary treatment is already represented in the face velocity, so the diagnostic does not multiply by cell volume fraction again. The monitor reports every band rate and fraction, their sums, and `P7`. These bands are a cross-passage diagnostic; they are not yet per-rod or per-sheet control volumes.
+**Current NGA2 implementation:** At a configurable `x`-face, the detected open passage is divided into `N` equal-width `y` bands. Each \(\dot m_\ell\) is the sum of \(\rho U\,\Delta y\,\Delta z\) over the staggered faces in that band. NGA2's immersed-boundary treatment is already represented in the face velocity, so the diagnostic does not multiply by cell volume fraction again. The monitor reports every band rate and fraction, their sums, and `P7`. For rod-sheet geometries, the same calculation is also reported at every sheet's downstream pressure-sampling plane. These remain equal-width cross-passage bands rather than individual rod control volumes.
 
 ### Project Eq. (P8): ppm conversion
 
@@ -1018,7 +1018,7 @@ The predeclared provisional criterion was \(R_{\Delta p,W}\le0.01\), maximum mas
 | Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; `P16b`-`P16e` | Provisional aligned single-sheet and three-sheet masks verified; advisor geometry pending |
 | Initial resistance estimate | Paper Eqs. (18)-(19) | Estimate only |
 | Fit Justin's pressure data | `P1`-`P3`, `P19` | Awaiting measured data |
-| Flow validation | `P3`-`P7`, `P14`-`P15`, `P19`-`P21` | Pressure, conservation, and equal-width flow-split checks implemented; physical validation pending |
+| Flow validation | `P3`-`P7`, `P14`-`P15`, `P19`-`P21` | Pressure, conservation, downstream, and per-sheet flow-split checks implemented; physical validation pending |
 | CO2 scalar transport | Paper Eqs. (11), (14); adaptations `A4`-`A5` | Add after flow validation |
 | CO2 bead loading | Paper Eqs. (1), (17); adaptations `A1`, `A8` | Requires SRP material data |
 | Gas-phase adsorption sink | Paper Eq. (15), adaptation `A6` | Core capture coupling |

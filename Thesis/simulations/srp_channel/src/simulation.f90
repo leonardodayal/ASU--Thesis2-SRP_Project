@@ -19,7 +19,7 @@ module simulation
 
    type(ensight) :: ens_out
    type(event)   :: ens_evt
-   type(monitor) :: simfile,cflfile,flowfile,splitfile,sheetfile
+   type(monitor) :: simfile,cflfile,flowfile,splitfile,sheetfile,sheetsplitfile
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
@@ -31,6 +31,10 @@ module simulation
    integer :: n_pressure_sheets
    real(WP), dimension(:), allocatable :: x_sheet_pressure_up,x_sheet_pressure_down
    real(WP), dimension(:), allocatable, target :: sheet_pressure_up,sheet_pressure_down,sheet_delta_p
+   real(WP), dimension(:,:), allocatable, target :: sheet_band_mfr,sheet_band_fraction
+   real(WP), dimension(:), allocatable, target :: sheet_split_mfr_sum
+   real(WP), dimension(:), allocatable, target :: sheet_split_fraction_sum
+   real(WP), dimension(:), allocatable, target :: sheet_flow_maldistribution
    real(WP), target :: mfr_in,mfr_out,mfr_error,p_in,p_out,delta_p
    real(WP), target :: p_upstream,p_downstream,porous_delta_p
    real(WP), target :: split_mfr_sum,split_fraction_sum,flow_maldistribution
@@ -100,6 +104,7 @@ contains
       porous_delta_p=p_upstream-p_downstream
       call sample_flow_bands()
       call sample_sheet_pressures()
+      call sample_sheet_flow_bands()
    end subroutine update_diagnostics
 
    subroutine sample_sheet_pressures
@@ -120,6 +125,17 @@ contains
          sheet_delta_p_closure=0.0_WP
       end if
    end subroutine sample_sheet_pressures
+
+   subroutine sample_sheet_flow_bands
+      integer :: m
+
+      if (n_pressure_sheets.eq.0) return
+      do m=1,n_pressure_sheets
+         call sample_flow_bands_at(x_sheet_pressure_down(m),sheet_band_mfr(:,m),&
+         &  sheet_band_fraction(:,m),sheet_split_mfr_sum(m),&
+         &  sheet_split_fraction_sum(m),sheet_flow_maldistribution(m))
+      end do
+   end subroutine sample_sheet_flow_bands
 
    subroutine initialize_flow_split
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_MIN,MPI_MAX,MPI_SUM,MPI_INTEGER
@@ -152,15 +168,24 @@ contains
    end subroutine initialize_flow_split
 
    subroutine sample_flow_bands
+      call sample_flow_bands_at(x_flow_split,band_mfr,band_fraction,&
+      &  split_mfr_sum,split_fraction_sum,flow_maldistribution)
+   end subroutine sample_flow_bands
+
+   subroutine sample_flow_bands_at(x_target,sampled_mfr,sampled_fraction,&
+   &                               mfr_sum,fraction_sum,maldistribution)
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
       use parallel, only: MPI_REAL_WP
       integer :: i,j,k,l,ierr
       real(WP) :: mean_mfr
-      real(WP), dimension(n_flow_bands) :: my_band_mfr
+      real(WP), intent(in) :: x_target
+      real(WP), dimension(:), intent(out) :: sampled_mfr,sampled_fraction
+      real(WP), intent(out) :: mfr_sum,fraction_sum,maldistribution
+      real(WP), dimension(size(sampled_mfr)) :: my_band_mfr
 
       my_band_mfr=0.0_WP
       do i=cfg%imin_,cfg%imax_
-         if (x_flow_split.ge.cfg%x(i).and.x_flow_split.lt.cfg%x(i+1)) then
+         if (x_target.ge.cfg%x(i).and.x_target.lt.cfg%x(i+1)) then
             do k=cfg%kmin_,cfg%kmax_
                do j=cfg%jmin_,cfg%jmax_
                   l=1+int(real(n_flow_bands,WP)*(cfg%ym(j)-y_flow_min)/&
@@ -172,23 +197,23 @@ contains
             end do
          end if
       end do
-      call MPI_ALLREDUCE(my_band_mfr,band_mfr,n_flow_bands,&
+      call MPI_ALLREDUCE(my_band_mfr,sampled_mfr,n_flow_bands,&
       &                  MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
-      split_mfr_sum=sum(band_mfr)
-      if (abs(split_mfr_sum).gt.tiny(1.0_WP)) then
-         band_fraction=band_mfr/split_mfr_sum
+      mfr_sum=sum(sampled_mfr)
+      if (abs(mfr_sum).gt.tiny(1.0_WP)) then
+         sampled_fraction=sampled_mfr/mfr_sum
       else
-         band_fraction=0.0_WP
+         sampled_fraction=0.0_WP
       end if
-      split_fraction_sum=sum(band_fraction)
-      mean_mfr=split_mfr_sum/real(n_flow_bands,WP)
+      fraction_sum=sum(sampled_fraction)
+      mean_mfr=mfr_sum/real(n_flow_bands,WP)
       if (abs(mean_mfr).gt.tiny(1.0_WP)) then
-         flow_maldistribution=sqrt(sum((band_mfr-mean_mfr)**2)/&
+         maldistribution=sqrt(sum((sampled_mfr-mean_mfr)**2)/&
          &  real(n_flow_bands,WP))/abs(mean_mfr)
       else
-         flow_maldistribution=0.0_WP
+         maldistribution=0.0_WP
       end if
-   end subroutine sample_flow_bands
+   end subroutine sample_flow_bands_at
 
    subroutine sample_pressure_plane(x_target,p_avg)
       use mpi_f08,  only: MPI_ALLREDUCE,MPI_SUM
@@ -367,6 +392,13 @@ contains
          call fs%interp_vel(Ui,Vi,Wi)
          call fs%get_div()
          allocate(band_mfr(n_flow_bands),band_fraction(n_flow_bands))
+         if (n_pressure_sheets.gt.0) then
+            allocate(sheet_band_mfr(n_flow_bands,n_pressure_sheets),&
+            &        sheet_band_fraction(n_flow_bands,n_pressure_sheets))
+            allocate(sheet_split_mfr_sum(n_pressure_sheets),&
+            &        sheet_split_fraction_sum(n_pressure_sheets),&
+            &        sheet_flow_maldistribution(n_pressure_sheets))
+         end if
          call initialize_flow_split()
       end block create_flow_solver
 
@@ -460,6 +492,29 @@ contains
             call sheetfile%add_column(sheet_delta_p_closure,'Sheet pressure-drop closure')
             call sheetfile%write()
          end block create_sheet_monitor
+
+         create_sheet_split_monitor: block
+            integer :: l,m
+            character(len=32) :: label
+            sheetsplitfile=monitor(cfg%amRoot,'sheet_flow_split')
+            call sheetsplitfile%add_column(time%n,'Timestep number')
+            call sheetsplitfile%add_column(time%t,'Time')
+            do m=1,n_pressure_sheets
+               do l=1,n_flow_bands
+                  write(label,'("Sheet ",i0," band ",i0," MFR")') m,l
+                  call sheetsplitfile%add_column(sheet_band_mfr(l,m),trim(label))
+                  write(label,'("Sheet ",i0," band ",i0," fraction")') m,l
+                  call sheetsplitfile%add_column(sheet_band_fraction(l,m),trim(label))
+               end do
+               write(label,'("Sheet ",i0," MFR sum")') m
+               call sheetsplitfile%add_column(sheet_split_mfr_sum(m),trim(label))
+               write(label,'("Sheet ",i0," fraction sum")') m
+               call sheetsplitfile%add_column(sheet_split_fraction_sum(m),trim(label))
+               write(label,'("Sheet ",i0," MFR CV")') m
+               call sheetsplitfile%add_column(sheet_flow_maldistribution(m),trim(label))
+            end do
+            call sheetsplitfile%write()
+         end block create_sheet_split_monitor
       end if
    end subroutine simulation_init
 
@@ -558,7 +613,10 @@ contains
          call cflfile%write()
          call flowfile%write()
          call splitfile%write()
-         if (n_pressure_sheets.gt.0) call sheetfile%write()
+         if (n_pressure_sheets.gt.0) then
+            call sheetfile%write()
+            call sheetsplitfile%write()
+         end if
       end do
    end subroutine simulation_run
 
@@ -568,10 +626,15 @@ contains
       call cflfile%finalize()
       call flowfile%finalize()
       call splitfile%finalize()
-      if (n_pressure_sheets.gt.0) call sheetfile%finalize()
+      if (n_pressure_sheets.gt.0) then
+         call sheetfile%finalize()
+         call sheetsplitfile%finalize()
+      end if
       deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction)
       if (n_pressure_sheets.gt.0) deallocate(x_sheet_pressure_up,x_sheet_pressure_down,&
-      &  sheet_pressure_up,sheet_pressure_down,sheet_delta_p)
+      &  sheet_pressure_up,sheet_pressure_down,sheet_delta_p,sheet_band_mfr,&
+      &  sheet_band_fraction,sheet_split_mfr_sum,sheet_split_fraction_sum,&
+      &  sheet_flow_maldistribution)
    end subroutine simulation_final
 
 end module simulation

@@ -34,6 +34,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - Matched one-flow-through open and provisional aligned four-rod runs pass the numerical convergence rule. Relative to the open case, the synthetic rods reduce four-band CV by `1.06811%` and increase total pressure drop by `2.65518%`; physical interpretation remains blocked by unconfirmed geometry and coefficients.
 - A configurable provisional stack now repeats the verified aligned sheet by count and spacing. A three-sheet target-mesh smoke test confirms three separated sheet groups, four separated rods per sheet, exclusion of wall padding, stable flow, and backward-compatible single-sheet behavior.
 - Per-sheet pressure diagnostics report each sheet drop, the sum, the sampled whole-stack drop, and closure error. A three-sheet smoke test telescopes exactly at monitor precision; non-rod and historical single-sheet regression cases pass.
+- Per-sheet flow-split diagnostics now report equal-width band rates, fractions, and P7 CV after every sheet. A three-sheet smoke test conserves flow at every plane, preserves symmetry, and passes open/single-sheet regressions.
 
 ## Assumptions and decisions still needed
 
@@ -161,5 +162,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, extend flow-split and maldistribution reporting to every sheet plane and verify its accounting on the provisional stack. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
+While physical data are pending, run the provisional three-sheet stack for one flow-through time and summarize final-window per-sheet pressure drops and maldistribution. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
 
