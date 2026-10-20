@@ -40,7 +40,8 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A configurable `stacked_aligned_rods_z` option repeats the verified aligned sheet by count and center-to-center spacing about a stack center. A three-sheet target-mesh smoke test produces exactly three separated six-cell x groups, four separated six-cell y groups per sheet, `7,680` cells per sheet, and no wall-padding cells. The run is stable and conservative, and the historical single-sheet input remains backward-compatible.
 - A conditional `sheet_pressure` monitor now samples both sides of every rod sheet and reports each pressure drop, their sum, the whole-stack sampled drop, and closure error. The three-sheet test reports final drops `0.765813`, `0.765851`, and `0.765825`; their sum and the stack drop both equal `2.29749` at monitor precision. Non-rod and single-sheet regression tests pass.
 - A conditional `sheet_flow_split` monitor now reports equal-width band mass flow, fractions, and Project Eq. P7 CV after every sheet. In the three-sheet smoke test, every plane sums to total mass flow with fraction sum `1.0`, paired bands remain symmetric, and open/single-sheet regressions preserve their earlier results.
-- The provisional three-sheet stack completed one flow-through time and passes the numerical convergence rule: total pressure-drop range/mean `0.105332%`, maximum mass-flow error `1.92149e-14`, maximum CFL `0.243918`, and maximum divergence `2.63684e-13`. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; mean downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`. These trends still include streamwise wall-profile development.
+- The provisional three-sheet stack completed one flow-through time and passes the numerical convergence rule: total pressure-drop range/mean `0.105332%`, maximum mass-flow error `1.92149e-14`, maximum CFL `0.243918`, and maximum divergence `2.63684e-13`. A matched zero-resistance stack control also converged and exactly reproduces the earlier open-channel mean total pressure drop. Control subtraction gives local sheet-plane pressure increments `0.0340160`, `0.0421726`, and `0.0463172`; resistance lowers P7 CV relative to control by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3.
+- A matched `128 x 32 x 32` resistance-active/control pair passes the numerical checks. Relative to the `256 x 64 x 64` pair, Project Eq. P15 changes are `3.98685%` for corrected total pressure drop, at most `4.00174%` for local sheet increments, and at most `2.86352%` for corrected P7 CV changes. A finer-than-target pair is still needed for formal grid independence.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -56,7 +57,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Run a matched zero-resistance three-sheet control for one flow-through time to isolate porous-sheet effects at the same pressure and flow-split planes. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Repeat the representative target-grid resistance-active stack at a smaller maximum timestep and calculate time-step changes in pressure drop and per-sheet P7 CV. A finer-than-target matched pair remains future work. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable physical data are available.
 
 ### Success criteria
 

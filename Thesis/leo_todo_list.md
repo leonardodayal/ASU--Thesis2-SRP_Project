@@ -24,7 +24,9 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** Per-sheet pressure monitors now report every sheet drop, their sum, whole-stack sampled drop, and closure error. The three-sheet smoke test closes exactly at monitor precision and regression tests cover non-rod and historical single-sheet inputs.
 - **Completed:** Flow split and Project Eq. P7 maldistribution are now reported after every sheet. The three-sheet smoke test conserves each plane's total flow, preserves symmetry, and passes open/single-sheet regressions.
 - **Completed:** The provisional three-sheet stack completed one flow-through time and passed the convergence rule. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`.
-- **Next milestone:** Run the matched zero-resistance three-sheet control to isolate porous-sheet effects from streamwise wall-profile development.
+- **Completed:** The matched zero-resistance three-sheet control completed one flow-through time and reproduced the open-channel total pressure drop. Control subtraction shows that the provisional resistance adds `0.142539` total pressure drop and reduces P7 CV by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3.
+- **Completed:** A matched `128 x 32 x 32` active/control pair gives Project Eq. P15 changes of at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes versus the target pair. A finer-than-target pair is still needed for formal grid independence.
+- **Next milestone:** Repeat the target-grid resistance-active stack with a smaller maximum timestep and quantify time-step sensitivity.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up

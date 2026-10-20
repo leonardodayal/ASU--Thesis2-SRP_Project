@@ -127,6 +127,14 @@ The `2026-10-19_stacked_three_sheet_provisional` case completed one flow-through
 
 Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`, summing exactly to sampled stack drop `0.649668` at monitor precision. Mean downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920` after sheets 1-3. Total pressure increase above the matched open case is `0.142539` (`7.90267%`), or `2.97632` times the provisional single-sheet increment. These remain synthetic results; a matched zero-resistance stack control is needed to remove streamwise wall-profile development from the per-sheet trends.
 
+## Matched zero-resistance stack control (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_control` case preserves the three masks and all sampling planes but uses `alpha = 1e30` and `C2 = 0`. It completed one flow-through time and reproduces the open-channel mean total pressure drop exactly at monitor precision. Subtracting this control gives local sheet-plane pressure increments of `0.0340160`, `0.0421726`, and `0.0463172`. The resistance-active case lowers P7 CV relative to control by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3. Thus the raw downstream CV increase is mainly background profile development, while the provisional porous resistance slightly improves this four-band uniformity metric.
+
+## Coarse-grid sensitivity pair (2026-10-19)
+
+Matched `128 x 32 x 32` active/control runs also complete one flow-through time and pass the numerical checks. Against the `256 x 64 x 64` pair, Project Eq. P15 changes are `3.98685%` for corrected total pressure drop, `3.55237%` to `4.00174%` for local sheet pressure increments, and `1.80770%` to `2.86352%` for sheet-plane P7 CV changes. The conclusions retain their signs. Because the coarse passage has 30 open cells across four bands, it loses exact paired-band symmetry; a finer-than-target run is still needed for formal grid independence.
+
 ## Next work (not implemented)
 
-Run a matched zero-resistance three-sheet control for one flow-through time to isolate porous-sheet contributions at the same pressure and flow-split planes. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Run the representative target-grid resistance-active stack at a smaller maximum timestep and calculate time-step changes in its reported quantities. A finer-than-target matched pair remains desirable but is computationally expensive. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
