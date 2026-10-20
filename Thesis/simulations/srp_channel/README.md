@@ -17,6 +17,7 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - `input.debug`: smaller smoke-test parameters.
 - `src/`: thesis-owned rectangular geometry and incompressible-flow driver.
 - `runs/`: dated run inputs, logs, monitors, and field outputs.
+- `review/`: reproducible pre-calibration Docker build, launcher, short verification cases, automated checks, and reviewer instructions.
 
 ## Implemented model
 
@@ -43,6 +44,8 @@ From this directory:
 ```sh
 FFTW_DIR=/opt/homebrew/opt/fftw make -j4
 ```
+
+For the pinned container build and four-case reviewer workflow, see [`review/README.md`](review/README.md). The container is a numerical review artifact; all bundled geometry and porous coefficients are provisional.
 
 ## Run
 
