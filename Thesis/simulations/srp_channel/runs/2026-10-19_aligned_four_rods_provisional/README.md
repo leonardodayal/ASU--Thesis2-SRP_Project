@@ -31,6 +31,6 @@ The final 25% (`t = 3` to `4`) uses the same rule as the provisional open-channe
 
 The final-window mean band fractions were `0.178337974052`, `0.321662025948`, `0.321662025948`, and `0.178337974052`. The band sums matched inlet mass flow exactly at monitor precision. Mean P7 coefficient of variation was `0.286648125749`; its final-window range/mean was `0.103262%`.
 
-The symmetric band pairs confirm that the aligned geometry and diagnostic preserve cross-channel symmetry. The larger inner-band fractions include the developed wall-profile effect and cannot yet be interpreted as rod-induced maldistribution alone. A converged open-channel run with the same four-band monitor is needed for that controlled comparison.
+The symmetric band pairs confirm that the aligned geometry and diagnostic preserve cross-channel symmetry. The matched converged open-channel run has mean P7 CV `0.289742902196`, so the rods reduce CV by `0.003094776447` (`1.06811%`) while increasing total pressure drop by `0.047890998` (`2.65518%`). This specific synthetic arrangement therefore makes the four-band split slightly more uniform at the cost of pressure loss.
 
 For context only, the earlier provisional open-channel mean total pressure drop was `1.80368173653`; this rod case is higher by `0.047890998` (`2.65518%`). Because all dimensions and the Darcy coefficient remain synthetic, neither value may be compared with the physical `10 Pa` design target.

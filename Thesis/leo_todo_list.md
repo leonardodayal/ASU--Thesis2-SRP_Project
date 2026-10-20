@@ -19,8 +19,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** A calibration-ready fitting tool now handles baseline subtraction, independent measurement/baseline uncertainties, calibration/validation splits, and Project Eqs. P1-P2 conversion. It recovers known synthetic `alpha` and `C2` values to floating-point precision, including a held-out validation point.
 - **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 - **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
-- **Completed:** A one-flow-through provisional four-rod run passes the numerical convergence rule and produces stable, symmetric four-band results. Its absolute CV includes wall-profile effects and is not yet an isolated rod contribution.
-- **Next milestone:** Run the matching converged open-channel four-band baseline, then add configurable stacked-sheet geometry while awaiting the physical inputs.
+- **Completed:** A matched converged open-channel baseline isolates the provisional rods' effect. The rods reduce four-band CV by `1.06811%` while increasing total pressure drop by `2.65518%`; these are synthetic numerical results, not physical design findings.
+- **Next milestone:** Add and verify configurable stacked-sheet geometry while awaiting the physical inputs.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
@@ -42,7 +42,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
 - [x] Add and verify equal-width downstream flow-split and maldistribution monitoring; geometry-specific rod/sheet comparisons remain pending.
-  - The provisional aligned four-rod case has now been run to numerical convergence. A matching converged open-channel flow-split baseline is still needed to isolate the rods' incremental effect.
+  - Matched converged open and provisional aligned four-rod cases now isolate the rods' incremental pressure-drop and four-band flow-split effects.
 
 ## 3. Literature review (with Marcus)
 

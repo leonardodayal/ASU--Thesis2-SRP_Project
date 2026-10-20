@@ -36,7 +36,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - A dependency-free calibration tool in `Thesis/simulations/srp_channel/tools` now reads a documented pressure-drop CSV, subtracts the matching baseline, combines measurement and baseline uncertainties, preserves calibration/validation splits, and fits Project Eqs. P1-P2. Its synthetic test recovers `alpha = 0.02 m^2` and `C2 = 1.6 1/m` to floating-point precision, including a held-out validation point.
 - Nine uniform-slab NGA2 cases now verify Darcy-only, Forchheimer-only, and combined pressure-drop scaling at velocities `0.5`, `1`, and `2`. Every final-window mean matches Project Eq. P1 within printed precision; maximum relative mass-flow error is `9.99201e-16`, maximum CFL is `0.08`, and maximum divergence is `2.68307e-13`.
 - A configurable downstream flow-split monitor now reports equal-width band mass-flow rates, fractions, their sums, and the Project Eq. P7 coefficient of variation. Its four-band MPI test conserves total flow at monitor precision and preserves symmetry; a historical input verifies the backward-compatible one-band defaults.
-- A one-flow-through provisional four-rod run passes the same numerical convergence rule as the open channel: pressure-drop range/mean `0.117198%`, maximum relative mass-flow error `1.91038e-14`, maximum CFL `0.246105`, and maximum divergence `2.61609e-13`. Mean four-band fractions are `0.178338`, `0.321662`, `0.321662`, and `0.178338`; mean P7 CV is `0.286648` and is stable over the final window. The wall profile contributes to that CV, so it is not yet an isolated rod effect.
+- Matched one-flow-through open and provisional four-rod runs both pass the numerical convergence rule. The open mean P7 CV is `0.289743`; the rod value is `0.286648`. The synthetic rods therefore reduce four-band CV by `1.06811%`, move `0.0773705` percentage points of flow into each outer band, and increase total pressure drop by `0.0478910` (`2.65518%`). These are numerical comparison results only.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -52,14 +52,14 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Run a matching converged open-channel case with the same four-band monitor to isolate the provisional rods' incremental maldistribution, then implement configurable stacked-sheet geometry without inventing physical dimensions. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Implement configurable stacked-sheet geometry without inventing physical dimensions, then verify its mask and flow-split bookkeeping on a short MPI run. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 
 1. **Completed:** Define a documented input format for pressure-drop data, geometry, fluid properties, uncertainty, and calibration/validation labels.
 2. **Completed:** Recover known Darcy and Forchheimer coefficients from synthetic multi-velocity data within a declared numerical tolerance.
 3. **Completed:** Verify simulated linear, quadratic, and combined porous-pressure-drop scaling against Project Eq. P1 at multiple velocities.
-4. **Partially completed:** Pressure drop, mass balance, and equal-width flow maldistribution are emitted to repeatable monitors, and a converged provisional rod-case summary is preserved. A matched open/rod comparison remains.
+4. **Completed for the provisional aligned case:** Pressure drop, mass balance, and equal-width flow maldistribution are emitted to repeatable monitors, with matched converged open/rod summaries preserved. Other arrangements remain future comparisons.
 5. Keep synthetic verification, preliminary Excellion correlations, and future calibrated SRP coefficients explicitly separated.
 
 ## Planned implementation sequence
