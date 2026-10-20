@@ -213,9 +213,10 @@ contains
       create_flow_solver: block
          use incomp_class, only: bcond,dirichlet,clipped_neumann
          type(bcond), pointer :: inflow
-         integer :: i,j,k,l,n,n_rods
+         integer :: i,j,k,l,m,n,n_rods,n_sheets
          real(WP) :: visc,Uin,alpha,x_start,x_end
          real(WP) :: rod_diameter,rod_span,rod_y,sheet_x
+         real(WP) :: sheet_spacing,stack_center_x
          character(len=32) :: porous_geometry
 
          fs=incomp(cfg=cfg,name='SRP open channel')
@@ -258,32 +259,50 @@ contains
                   end do
                end do
             end do
-         case ('aligned_rods_z')
+         case ('aligned_rods_z','stacked_aligned_rods_z')
             call param_read('Rod count',n_rods)
             call param_read('Rod diameter',rod_diameter)
             call param_read('Rod center span',rod_span)
-            call param_read('Rod sheet x',sheet_x)
+            if (trim(porous_geometry).eq.'aligned_rods_z') then
+               call param_read('Rod sheet x',stack_center_x)
+               n_sheets=1
+               sheet_spacing=0.0_WP
+            else
+               call param_read('Sheet count',n_sheets)
+               call param_read('Sheet spacing',sheet_spacing)
+               call param_read('Stack center x',stack_center_x)
+            end if
             if (n_rods.lt.1) error stop 'Rod count must be positive'
+            if (n_sheets.lt.1) error stop 'Sheet count must be positive'
             if (rod_diameter.le.0.0_WP) error stop 'Rod diameter must be positive'
             if (rod_span.lt.0.0_WP) error stop 'Rod center span must be nonnegative'
-            do l=1,n_rods
-               if (n_rods.eq.1) then
-                  rod_y=0.0_WP
+            if (sheet_spacing.lt.0.0_WP) error stop 'Sheet spacing must be nonnegative'
+            do m=1,n_sheets
+               if (n_sheets.eq.1) then
+                  sheet_x=stack_center_x
                else
-                  rod_y=-0.5_WP*rod_span+real(l-1,WP)*rod_span/real(n_rods-1,WP)
+                  sheet_x=stack_center_x+(real(m-1,WP)-&
+                  &       0.5_WP*real(n_sheets-1,WP))*sheet_spacing
                end if
-               do k=cfg%kmino_,cfg%kmaxo_
-                  do j=cfg%jmino_,cfg%jmaxo_
-                     do i=cfg%imino_,cfg%imaxo_
-                        if ((cfg%xm(i)-sheet_x)**2+(cfg%ym(j)-rod_y)**2.le.&
-                        &   (0.5_WP*rod_diameter)**2.and.cfg%VF(i,j,k).gt.0.5_WP) &
-                        &   chi_p(i,j,k)=1.0_WP
+               do l=1,n_rods
+                  if (n_rods.eq.1) then
+                     rod_y=0.0_WP
+                  else
+                     rod_y=-0.5_WP*rod_span+real(l-1,WP)*rod_span/real(n_rods-1,WP)
+                  end if
+                  do k=cfg%kmino_,cfg%kmaxo_
+                     do j=cfg%jmino_,cfg%jmaxo_
+                        do i=cfg%imino_,cfg%imaxo_
+                           if ((cfg%xm(i)-sheet_x)**2+(cfg%ym(j)-rod_y)**2.le.&
+                           &   (0.5_WP*rod_diameter)**2.and.&
+                           &   cfg%VF(i,j,k).gt.0.5_WP) chi_p(i,j,k)=1.0_WP
+                        end do
                      end do
                   end do
                end do
             end do
          case default
-            error stop 'Porous geometry must be slab or aligned_rods_z'
+            error stop 'Unknown porous geometry'
          end select
          call cfg%sync(chi_p)
          fs%U=0.0_WP; fs%V=0.0_WP; fs%W=0.0_WP

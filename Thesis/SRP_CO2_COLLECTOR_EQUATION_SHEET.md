@@ -858,6 +858,26 @@ and the corresponding cell-centered mask is
 
 with \(\chi_p=0\) otherwise. The current reference uses \(N_r=4\), \(d_r=0.1\), \(S_r=0.6\), and \(x_s=2\); these values are provisional and do not replace advisor-confirmed geometry.
 
+For the provisional stacked extension, \(N_s\) copies of the aligned sheet use center-to-center spacing \(S_s\) about stack center \(x_c\):
+
+\[
+\boxed{
+x_m=x_c+
+\left(m-1-\frac{N_s-1}{2}\right)S_s,
+\qquad m=1,\ldots,N_s,
+}
+\tag{P16d}
+\]
+
+and `P16c` takes the minimum over both sheet index \(m\) and rod index \(\ell\). The center-to-center stack span is \((N_s-1)S_s\), while the porous streamwise depth including the rod diameter is
+
+\[
+\boxed{D_{\mathrm{stack}}=(N_s-1)S_s+d_r.}
+\tag{P16e}
+\]
+
+The verified synthetic reference uses three sheets centered at \(x=1.5,2.0,2.5\), each with the same four provisional rods. Sheet count, spacing, center, and resulting depth must be replaced by confirmed contactor geometry before physical use.
+
 ### Project Eq. (P17): staggered-face Darcy-Forchheimer source
 
 NGA2 stores velocity components on staggered faces. For a face \(f\), the implemented interpolated mask and speed are
@@ -970,7 +990,7 @@ The predeclared provisional criterion was \(R_{\Delta p,W}\le0.01\), maximum mas
 |---|---|---|
 | Open-channel flow | Paper Eq. (9), adaptation `A2`; Paper Eq. (10) with \(\chi_p=0\); `P20`-`P21` | Implemented and provisionally converged |
 | Porous slab verification | Adaptation `A3`; `P16`-`P19` | Darcy and Forchheimer terms independently verified |
-| Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; `P16b`-`P16c` | Provisional aligned mask verified; advisor geometry pending |
+| Porous bead-rod flow | Paper Eq. (10), adaptation `A3`; `P16b`-`P16e` | Provisional aligned single-sheet and three-sheet masks verified; advisor geometry pending |
 | Initial resistance estimate | Paper Eqs. (18)-(19) | Estimate only |
 | Fit Justin's pressure data | `P1`-`P3`, `P19` | Awaiting measured data |
 | Flow validation | `P3`-`P7`, `P14`-`P15`, `P19`-`P21` | Pressure, conservation, and equal-width flow-split checks implemented; physical validation pending |

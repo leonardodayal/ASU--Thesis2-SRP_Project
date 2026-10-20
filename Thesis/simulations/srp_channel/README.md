@@ -27,6 +27,7 @@ A dependency-free calibration tool in `tools/` fits baseline-corrected multi-vel
 - Constant-density, constant-viscosity incompressible flow.
 - Optional Darcy-Forchheimer porous slab selected by streamwise bounds, permeability, and inertial coefficient.
 - Optional `aligned_rods_z` geometry with configurable rod count, diameter, first-to-last center span, and sheet location.
+- Optional `stacked_aligned_rods_z` geometry that repeats the aligned sheet using configurable sheet count, center-to-center spacing, and stack center. Its streamwise porous depth is `(Sheet count - 1) * Sheet spacing + Rod diameter`.
 - Finite end time, Ensight velocity/pressure/wall-volume-fraction/porous-mask output, CFL and solver monitors, inlet/outlet mass-flow balance, area-averaged pressure drops at configurable planes, and equal-width flow-band diagnostics at a configurable downstream plane.
 
 `ny` and `nz` include the padded wall cells. With the current target input and two padding cells on each side, the open passage contains `60 x 60` fully open cross-section cells inside the `64 x 64` allocated cross-section.
@@ -102,6 +103,12 @@ The mean band fractions are `0.178338`, `0.321662`, `0.321662`, and `0.178338`; 
 
 The matched `2026-10-19_open_channel_flow_split_provisional` case has mean CV `0.289743`. Relative to it, the rods reduce CV by `1.06811%`, move `0.0773705` percentage points of flow into each outer band, and increase total pressure drop by `0.0478910` (`2.65518%`). Thus this synthetic aligned arrangement slightly flattens the four-band distribution at the cost of pressure loss. It remains unsuitable for physical design conclusions.
 
+## Provisional stacked-sheet geometry (2026-10-19)
+
+The `2026-10-19_stacked_three_sheet_target_smoke` case verifies three separated sheets centered at `x = 1.5`, `2.0`, and `2.5`, with four aligned rods per sheet. The exported mask contains `23,040` porous cells: three separated six-cell x groups, four separated six-cell y groups per sheet, and 60 open-passage z cells with no wall-padding cells. Each sheet has `7,680` cells, exactly matching the verified single-sheet mask.
+
+The ten-step MPI run completed with final CFL `0.142256`, maximum divergence `2.18902e-13`, relative mass-flow error `3.33206e-15`, and symmetric four-band flow. A historical single-sheet input also reproduces its prior result with the new executable. This verifies geometry construction and short-time stability only; the stack dimensions and resistance remain synthetic.
+
 ## Next work (not implemented)
 
-Add a configurable stacked-sheet geometry without assigning unconfirmed physical dimensions, then verify its mask and flow-split bookkeeping on a short MPI run. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.
+Add configurable per-sheet pressure-drop diagnostics for the stacked geometry, then verify their accounting on a short MPI run. Obtain confirmed rod dimensions, Marcus's first orientation, and calibration-quality empty-mesh and bead-filled-sheet data before replacing the provisional aligned reference values. Do not interpret any synthetic verification coefficient as an SRP material property.

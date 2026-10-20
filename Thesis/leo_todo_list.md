@@ -20,7 +20,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 - **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
 - **Completed:** A matched converged open-channel baseline isolates the provisional rods' effect. The rods reduce four-band CV by `1.06811%` while increasing total pressure drop by `2.65518%`; these are synthetic numerical results, not physical design findings.
-- **Next milestone:** Add and verify configurable stacked-sheet geometry while awaiting the physical inputs.
+- **Completed:** A configurable provisional stack repeats the verified aligned sheet by sheet count and center-to-center spacing. A three-sheet, four-rods-per-sheet target-mesh smoke test verifies separated masks, no wall clipping, conservative flow, and backward-compatible single-sheet behavior.
+- **Next milestone:** Add and verify per-sheet pressure-drop diagnostics for stacked cases while awaiting the physical inputs.
 - **Current blockers for physical predictions:** Confirmed contactor dimensions/operating conditions, rod-orientation priorities, and calibration-quality empty-mesh and bead-filled-sheet data are still outstanding.
 
 ## 1. Get set up
@@ -39,6 +40,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [x] Add a verified porous-medium test region with lower permeability than the surrounding open space. Bead-rod geometry remains pending.
 - [x] Implement and independently verify the Darcy and Forchheimer resistance terms used by the radial paper. Physical coefficients still require Justin's data.
 - [x] Place a provisional four-rod aligned reference across the 64-cell width; replace its dimensions if advisor values differ.
+- [x] Assemble the aligned reference into a configurable provisional stack with explicit sheet count, spacing, stack center, and derived streamwise depth.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
 - [x] Add and verify equal-width downstream flow-split and maldistribution monitoring; geometry-specific rod/sheet comparisons remain pending.

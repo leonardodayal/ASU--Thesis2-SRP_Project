@@ -37,6 +37,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - Nine uniform-slab NGA2 cases now verify Darcy-only, Forchheimer-only, and combined pressure-drop scaling at velocities `0.5`, `1`, and `2`. Every final-window mean matches Project Eq. P1 within printed precision; maximum relative mass-flow error is `9.99201e-16`, maximum CFL is `0.08`, and maximum divergence is `2.68307e-13`.
 - A configurable downstream flow-split monitor now reports equal-width band mass-flow rates, fractions, their sums, and the Project Eq. P7 coefficient of variation. Its four-band MPI test conserves total flow at monitor precision and preserves symmetry; a historical input verifies the backward-compatible one-band defaults.
 - Matched one-flow-through open and provisional four-rod runs both pass the numerical convergence rule. The open mean P7 CV is `0.289743`; the rod value is `0.286648`. The synthetic rods therefore reduce four-band CV by `1.06811%`, move `0.0773705` percentage points of flow into each outer band, and increase total pressure drop by `0.0478910` (`2.65518%`). These are numerical comparison results only.
+- A configurable `stacked_aligned_rods_z` option repeats the verified aligned sheet by count and center-to-center spacing about a stack center. A three-sheet target-mesh smoke test produces exactly three separated six-cell x groups, four separated six-cell y groups per sheet, `7,680` cells per sheet, and no wall-padding cells. The run is stable and conservative, and the historical single-sheet input remains backward-compatible.
 - The dimensions and operating conditions are provisional; no physically grounded or experimentally validated pressure-drop result exists yet.
 
 ## Important limitation of the stock baseline
@@ -52,7 +53,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Implement configurable stacked-sheet geometry without inventing physical dimensions, then verify its mask and flow-split bookkeeping on a short MPI run. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
+Add configurable per-sheet pressure-drop diagnostics for the stacked geometry and verify their accounting on a short MPI run. Obtain confirmed rod dimensions and Marcus's first orientation, then fit permeability and inertial resistance when suitable empty-mesh and bead-filled-sheet data are available. Replace the provisional aligned reference parameters before making physical comparisons.
 
 ### Success criteria
 

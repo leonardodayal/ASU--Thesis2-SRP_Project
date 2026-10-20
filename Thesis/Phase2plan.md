@@ -32,6 +32,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - Nine uniform-slab NGA2 cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
 - A configurable downstream flow-split monitor implements Project Eqs. P6-P7 over equal-width bands. Its four-band MPI verification conserves total mass flow at monitor precision, preserves symmetry, and remains backward-compatible with historical inputs.
 - Matched one-flow-through open and provisional aligned four-rod runs pass the numerical convergence rule. Relative to the open case, the synthetic rods reduce four-band CV by `1.06811%` and increase total pressure drop by `2.65518%`; physical interpretation remains blocked by unconfirmed geometry and coefficients.
+- A configurable provisional stack now repeats the verified aligned sheet by count and spacing. A three-sheet target-mesh smoke test confirms three separated sheet groups, four separated rods per sheet, exclusion of wall padding, stable flow, and backward-compatible single-sheet behavior.
 
 ## Assumptions and decisions still needed
 
@@ -102,9 +103,9 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Represent a provisional four-rod aligned reference across the 64-cell cross-section using the verified porous mask.
 - [x] Check the provisional rod resolution: each diameter spans six target-mesh cells in both diameter directions, and the four masks are separated and unclipped.
 - [ ] Implement only the arrangements selected for the first comparison: aligned, 90-degree rotation, offset, or angled.
-- [ ] Assemble the validated sheet representation into a configurable stack with explicit sheet spacing and contactor depth.
+- [x] Assemble the validated sheet representation into a configurable stack with explicit sheet count and spacing; derive contactor depth from the first-to-last sheet span plus rod diameter.
 - [ ] Define packing density from measurable geometry or bead mass/volume rather than an unlabeled tuning factor.
-- [ ] Output the porous mask with the flow fields so each geometry can be inspected.
+- [x] Output the porous mask with the flow fields so each geometry can be inspected.
 
 **Verify:** Cell counts and rendered slices confirm the intended rod size, count, placement, and orientation with no accidental overlap or boundary clipping.
 
@@ -158,5 +159,5 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-While physical data are pending, add configurable stacked-sheet geometry without assigning unconfirmed physical dimensions, then verify the mask and flow-split bookkeeping in a short MPI run. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
+While physical data are pending, add configurable per-sheet pressure-drop diagnostics for the stacked geometry and verify their accounting in a short MPI run. Fit permeability and inertial resistance with Project Eqs. P1-P2 when calibration-quality empty-mesh and bead-filled-sheet data arrive. Keep synthetic and preliminary Excellion correlations separate from physical SRP cases.
 
