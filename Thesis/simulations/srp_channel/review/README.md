@@ -14,6 +14,32 @@ This package compiles and runs the thesis-owned NGA2 airflow case in a reproduci
 
 Ubuntu provides the required packages for both `linux/amd64` and `linux/arm64`, and NGA2 is compiled from source for the selected platform. A platform is supported only after the image builds and the review suite passes on that platform; see the verified-platform section below.
 
+Docker images use the Linux kernel. Therefore the Apple Silicon package is a `linux/arm64` image run by Docker Desktop or Colima on macOS, and the Intel Windows package is a `linux/amd64` image run by Docker Desktop in Linux-container mode. These are not macOS-native or Windows-native containers.
+
+## Host-specific build and verification
+
+On an Apple Silicon Mac with Docker Desktop or Colima running:
+
+```sh
+./review/build-macos-arm64.sh
+```
+
+On an Intel Windows computer, select **Linux containers** in Docker Desktop and run from PowerShell:
+
+```powershell
+.\review\build-windows-intel.ps1
+```
+
+Each wrapper builds the platform-specific image and then runs the same four-case review suite. It deliberately fails if its default verification output directory already exists; pass a new result name to preserve prior evidence:
+
+```sh
+./review/build-macos-arm64.sh macos-arm64-second-run
+```
+
+```powershell
+.\review\build-windows-intel.ps1 -OutputName windows-amd64-second-run
+```
+
 ## Build
 
 Run from `Thesis/simulations/srp_channel`:
