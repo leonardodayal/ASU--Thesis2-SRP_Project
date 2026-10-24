@@ -69,7 +69,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [ ] Define how turbine/whirlybird performance will be coupled later; do not assume inlet velocity and available pressure independently for a passive system.
 - [ ] Calculate the target Reynolds number and expected empty-channel pressure drop for a basic sanity check.
 
-**Verify:** All dimensional values, units, sources, and derived nondimensional values are written in the case README. No placeholder value is used without being labeled.
+**Verify:** All dimensional values, units, sources, and derived nondimensional values are written in the case documentation. No placeholder value is used without being labeled.
 
 ### 2. Create a separate 3D SRP case
 
@@ -92,7 +92,7 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [x] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
 - [x] Compute mass-flow conservation error using Project Eqs. P4-P5.
 - [x] Inspect the target-mesh geometry and velocity, pressure, and wall-volume-fraction output in ParaView.
-- [x] Run the provisional target-mesh setup until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
+- [x] Run the provisional target-mesh setup until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the simulation guide.
 - [x] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
 
 **Verify:** CFL remains below its configured limit, the solver residuals remain bounded, inlet and outlet mass flow agree within a documented tolerance, and the measured empty-channel pressure drop is physically plausible.

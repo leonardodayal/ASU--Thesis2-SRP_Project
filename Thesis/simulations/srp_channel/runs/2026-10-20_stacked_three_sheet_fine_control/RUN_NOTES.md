@@ -28,4 +28,4 @@ Over the final 25% (`t = 3` to `4`):
 | 2 | `0.177541514970` | `0.279355822355` |
 | 3 | `0.166410073852` | `0.291509407186` |
 
-The local drops sum to the sampled stack drop `0.539100542914`; maximum closure error is `2.17200e-16`. The active-minus-control results and grid comparison are documented in `../2026-10-20_stacked_three_sheet_fine/README.md`.
+The local drops sum to the sampled stack drop `0.539100542914`; maximum closure error is `2.17200e-16`. The active-minus-control results and grid comparison are documented in `../2026-10-20_stacked_three_sheet_fine/RUN_NOTES.md`.

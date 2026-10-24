@@ -1,6 +1,6 @@
 # Project Handoff
 
-Last updated: 2026-10-20
+Last updated: 2026-10-24
 
 ## Objective
 
@@ -17,6 +17,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 
 ## Verified current status
 
+- Repository guidance is organized around one root `README.md`. Root-level `SETUP.md` contains native and Docker setup, while specialized model, review, tool, and run records use descriptive filenames beside the artifacts they document.
 - NGA2 has been compiled successfully.
 - The stock channel example has run successfully with four MPI ranks.
 - The preserved baseline is in `NGA2/examples/channel/runs/2026-10-05_baseline/`.
@@ -127,7 +128,7 @@ make USE_HYPRE=FALSE USE_LAPACK=FALSE
 mpiexec -n 4 ./nga.dp.gnu.opt.mpi.exe -i input
 ```
 
-These commands verify the stock example only. The thesis-owned case build/run procedure and smoke-test evidence are documented in `Thesis/simulations/srp_channel/README.md`.
+These commands verify the stock example only. The thesis-owned case build/run procedure and smoke-test evidence are documented in `Thesis/simulations/srp_channel/SIMULATION_GUIDE.md`.
 
 ## Repository caution
 

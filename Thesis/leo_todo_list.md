@@ -4,8 +4,9 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 **Priority:** Finish the remaining hydrodynamic diagnostics while physical geometry and calibration data are pending, then calibrate and validate the pressure-drop model before adding adsorption.
 
-## Progress snapshot (2026-10-20)
+## Progress snapshot (2026-10-24)
 
+- **Completed:** Repository documentation now has one root `README.md` for orientation and a root-level `SETUP.md` for native and Docker workflows. Specialized simulation, review, calibration, and run records retain their content under descriptive filenames.
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
 - **Completed:** The radial paper's introduction, literature overview, and governing adsorption equations have been reviewed and documented in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
 - **Completed:** A separate thesis-owned 3D SRP case now builds and completes finite MPI smoke tests with explicit inflow/outflow on debug and target `256 x 64 x 64` meshes.
@@ -51,7 +52,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [x] Run it first as a pure open channel with inflow and outflow.
   - Four-rank debug and target-mesh smoke tests completed normally on 2026-10-10. The target run ended at `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative inlet/outlet mass-flow error about `7e-15`.
   - The target-mesh output was successfully visualized in ParaView on 2026-10-12.
-  - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/README.md`.
+  - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/SIMULATION_GUIDE.md`.
 - [x] Add a verified porous-medium test region with lower permeability than the surrounding open space.
   - Uniform-slab, single-sheet rod, and provisional stacked-sheet masks are implemented and verified. Their current dimensions and resistance values remain synthetic.
 - [x] Implement and independently verify the Darcy and Forchheimer resistance terms used by the radial paper. Physical coefficients still require Justin's data.

@@ -10,4 +10,4 @@ Purpose: matched zero-resistance baseline for the corrected fine-grid active cas
 - Ensight output: disabled
 - Wall time: about `56.0 min`
 
-The run terminated normally at `t = 4`. Pair-level corrected results and numerical checks are documented in `../2026-10-20_stacked_three_sheet_fine_fractional/README.md`.
+The run terminated normally at `t = 4`. Pair-level corrected results and numerical checks are documented in `../2026-10-20_stacked_three_sheet_fine_fractional/RUN_NOTES.md`.

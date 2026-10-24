@@ -45,7 +45,7 @@ From this directory:
 FFTW_DIR=/opt/homebrew/opt/fftw make -j4
 ```
 
-For the pinned container build and four-case reviewer workflow, see [`review/README.md`](review/README.md). The container is a numerical review artifact; all bundled geometry and porous coefficients are provisional.
+For the pinned container build and four-case reviewer workflow, see [`review/DOCKER_REVIEW.md`](review/DOCKER_REVIEW.md). The container is a numerical review artifact; all bundled geometry and porous coefficients are provisional.
 
 ## Run
 
@@ -68,7 +68,7 @@ Both runs reached their configured maximum time and their monitor files contain 
 
 The `2026-10-16_open_channel_target_provisional` run advanced the target mesh to `t = 4`, one flow-through time based on the provisional `Lx = 4` and `Uin = 1`. The predeclared final-window rule required pressure-drop range/mean no greater than `1%`, relative mass-flow error no greater than `1e-10`, CFL no greater than `0.8`, and finite/bounded solver diagnostics.
 
-Over `t = 3` to `4`, the mean provisional pressure drop was `1.80368173653`, its range/mean was `0.123082%`, and maximum relative mass-flow error was `1.84374e-14`. Full-run maximum CFL and divergence were `0.247208` and `2.65364e-13`. This establishes numerical convergence for the provisional setup only. See the dated run README and monitors for the preserved evidence.
+Over `t = 3` to `4`, the mean provisional pressure drop was `1.80368173653`, its range/mean was `0.123082%`, and maximum relative mass-flow error was `1.84374e-14`. Full-run maximum CFL and divergence were `0.247208` and `2.65364e-13`. This establishes numerical convergence for the provisional setup only. See the dated run notes and monitors for the preserved evidence.
 
 ## Darcy slab verification (2026-10-16)
 
