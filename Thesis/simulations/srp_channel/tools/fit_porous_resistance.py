@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Fit Darcy-Forchheimer resistance from pressure-drop measurements."""
+"""Fit Darcy-Forchheimer resistance from pressure-drop measurements.
+
+The fitted coefficients describe the tested porous direction.  In the current
+workflow that is the normal-flow calibration direction; using them for a
+parallel-flow design requires either an isotropy assumption or directional data.
+"""
 
 import argparse
 import csv
@@ -61,9 +66,13 @@ def load_measurements(path):
                 raise ValueError(
                     f"split must be calibration or validation on CSV line {line_number}"
                 )
+            # Remove holder/empty-mesh losses before assigning the remaining
+            # pressure drop to the bead-filled porous region.
             row["net_pressure_drop_pa"] = (
                 row["pressure_drop_pa"] - row["baseline_pressure_drop_pa"]
             )
+            # Independent measurement and baseline uncertainties add in
+            # quadrature when the two pressure drops are subtracted.
             row["net_pressure_uncertainty_pa"] = math.hypot(
                 row["pressure_drop_uncertainty_pa"],
                 row["baseline_pressure_drop_uncertainty_pa"],
@@ -87,6 +96,8 @@ def fit_resistance(rows, porous_length_m, dynamic_viscosity_pa_s, density_kg_m3)
     if len(calibration) < 2:
         raise ValueError("at least two calibration measurements are required")
 
+    # Weighted least squares for delta_p/L = A*U + B*U^2.  The zero intercept
+    # follows from fitting the baseline-corrected porous contribution.
     s11 = s12 = s22 = t1 = t2 = 0.0
     for row in calibration:
         velocity = row["velocity_m_s"]
@@ -110,6 +121,8 @@ def fit_resistance(rows, porous_length_m, dynamic_viscosity_pa_s, density_kg_m3)
     if linear_coefficient <= 0.0 or quadratic_coefficient < 0.0:
         raise ValueError("fit produced nonphysical Darcy-Forchheimer coefficients")
 
+    # Project Eq. P2 converts the fitted polynomial coefficients into the two
+    # quantities consumed by the NGA2 Darcy-Forchheimer source.
     permeability_m2 = dynamic_viscosity_pa_s / linear_coefficient
     inertial_coefficient_m_inv = 2.0 * quadratic_coefficient / density_kg_m3
 

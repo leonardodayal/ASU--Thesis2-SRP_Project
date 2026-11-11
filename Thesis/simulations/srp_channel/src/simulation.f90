@@ -1,4 +1,9 @@
-!> Constant-density flow through the empty rectangular SRP channel.
+!> Constant-density airflow and porous resistance in the SRP channel.
+!>
+!> NGA2 supplies the incompressible-flow, pressure, velocity, MPI, immersed-
+!> boundary, time-tracking, monitor, and Ensight infrastructure.  This module
+!> supplies the SRP boundary conditions, porous masks, Darcy-Forchheimer source,
+!> and the pressure-drop and flow-distribution diagnostics used by the thesis.
 module simulation
    use precision,         only: WP
    use geometry,          only: cfg
@@ -56,6 +61,9 @@ contains
       dy_near=max(ylo-yc,0.0_WP,yc-yhi)
       dx_far=max(abs(xlo-xc),abs(xhi-xc))
       dy_far=max(abs(ylo-yc),abs(yhi-yc))
+      ! Classify cells that are entirely inside or outside analytically.  Only
+      ! cells cut by the circle use deterministic subcell sampling.  Returning
+      ! a fractional mask avoids changing represented rod area with grid size.
       if (dx_far**2+dy_far**2.le.radius**2) then
          fraction=1.0_WP
       else if (dx_near**2+dy_near**2.ge.radius**2) then
@@ -95,6 +103,8 @@ contains
       integer :: i,j,k,ierr
       real(WP) :: my_pin,my_pout,my_ain,my_aout,ain,aout
 
+      ! NGA2 integrates the boundary mass fluxes; the remaining pressure and
+      ! flow diagnostics below define the thesis-specific reported quantities.
       call fs%get_mfr()
       ! Boundary conditions are stored in reverse insertion order: outflow first.
       mfr_out= fs%mfr(1)
@@ -236,11 +246,16 @@ contains
                   row_lo=max(cfg%y(j),y_flow_min)
                   row_hi=min(cfg%y(j+1),y_flow_max)
                   if (row_hi.le.row_lo) cycle
+                  ! U is stored on staggered x faces.  Interpolate to the exact
+                  ! requested physical plane rather than snapping to a grid face.
                   u_sample=(1.0_WP-x_weight)*fs%U(i,j,k)+&
                   &        x_weight*fs%U(i+1,j,k)
                   do l=1,n_flow_bands
                      y_overlap=max(0.0_WP,min(row_hi,y_band_edge(l))-&
                      &                    max(row_lo,y_band_edge(l-1)))
+                     ! Split rows at physical band edges so coarse and fine grids
+                     ! integrate identical band widths.  Do not multiply by VF:
+                     ! the immersed-wall effect is already present in face U.
                      my_band_mfr(l)=my_band_mfr(l)+fs%rho*u_sample*y_overlap*cfg%dz(k)
                   end do
                end do
@@ -313,6 +328,8 @@ contains
       time%dt=time%dtmax
       time%itmax=2
 
+      ! Build the NGA2 flow solver, then layer the SRP porous geometry and
+      ! application diagnostics onto the generic incompressible-flow objects.
       create_flow_solver: block
          use incomp_class, only: bcond,dirichlet,clipped_neumann
          use messager,     only: log
@@ -348,6 +365,8 @@ contains
          if (forchheimer_coeff.lt.0.0_WP) error stop 'Forchheimer coefficient must be nonnegative'
          if (x_end.lt.x_start) error stop 'Porous slab end must not precede its start'
          if (n_flow_bands.lt.1) error stop 'Flow split bands must be positive'
+         ! Store the linear coefficient once; the velocity-dependent inertial
+         ! contribution is evaluated on every staggered face during time stepping.
          darcy_coeff=visc/alpha
          call fs%add_bcond(name='inflow', type=dirichlet,&
          &                 locator=left_of_domain,face='x',dir=-1,canCorrect=.false.)
@@ -359,6 +378,8 @@ contains
          call fs%setup(pressure_solver=ps,implicit_solver=vs)
 
          call param_read('Inlet velocity',Uin)
+         ! chi_p is the cell-centered porous volume fraction used to localize
+         ! resistance.  It is distinct from cfg%VF, the fluid fraction of walls.
          chi_p=0.0_WP
          select case (trim(porous_geometry))
          case ('slab')
@@ -406,6 +427,9 @@ contains
             allocate(my_rod_area(n_rods,n_sheets),rod_area(n_rods,n_sheets))
             allocate(my_partial_cells(n_rods,n_sheets),partial_cells(n_rods,n_sheets))
             my_rod_area=0.0_WP; my_partial_cells=0
+            ! Each current rod is a z-directed porous cylinder.  Its circular
+            ! x-y cross-section is repeated at the requested sheet x locations;
+            ! with x-directed inlet flow this is the normal-flow configuration.
             do m=1,n_sheets
                if (n_sheets.eq.1) then
                   sheet_x=stack_center_x
@@ -619,6 +643,9 @@ contains
 
    subroutine simulation_run
       implicit none
+      ! Advance until the configured physical end time.  NGA2 selects a stable
+      ! dt from the CFL limit, while the two inner iterations update momentum
+      ! and project velocity onto a divergence-free field.
       do while (.not.time%done())
          call fs%get_cfl(time%dt,time%cfl)
          call time%adjust_dt()
@@ -630,10 +657,14 @@ contains
             fs%V=0.5_WP*(fs%V+fs%Vold)
             fs%W=0.5_WP*(fs%W+fs%Wold)
 
+            ! NGA2 first supplies convection and viscous momentum terms.
             call fs%get_dmomdt(resU,resV,resW)
             add_porous_resistance: block
                integer :: i,j,k
                real(WP) :: chi_face,drag_coeff,speed_face
+               ! Speed is most naturally calculated at cell centers, then both
+               ! speed and the porous mask are interpolated to NGA2's staggered
+               ! velocity faces before adding component-wise resistance.
                call fs%interp_vel(Ui,Vi,Wi)
                speed_mag=sqrt(Ui**2+Vi**2+Wi**2)
                call cfg%sync(speed_mag)
@@ -642,6 +673,9 @@ contains
                      do i=cfg%imin_,cfg%imax_
                         chi_face=sum(fs%itpr_x(:,i,j,k)*chi_p(i-1:i,j,k))
                         speed_face=sum(fs%itpr_x(:,i,j,k)*speed_mag(i-1:i,j,k))
+                        ! Project Eq. P17: -(mu/alpha + rho*C2*|u|/2) u.
+                        ! One scalar alpha and C2 are currently used in every
+                        ! direction, so the implemented resistance is isotropic.
                         drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
                         resU(i,j,k)=resU(i,j,k)-drag_coeff*chi_face*fs%U(i,j,k)
                         chi_face=sum(fs%itpr_y(:,i,j,k)*chi_p(i,j-1:j,k))
@@ -690,6 +724,8 @@ contains
 
             call fs%apply_bcond(time%t,time%dt)
             call fs%correct_mfr()
+            ! Pressure projection: solve a Poisson equation for the pressure
+            ! correction and subtract its gradient so continuity is satisfied.
             call fs%get_div()
             fs%psolv%rhs=-cfg%vol*fs%div*fs%rho/time%dt
             fs%psolv%sol=0.0_WP

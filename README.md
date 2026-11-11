@@ -11,6 +11,8 @@ The current model focuses on airflow, pressure drop, and flow distribution. CO2 
 - [Thesis/leo_todo_list.md](Thesis/leo_todo_list.md): working checklist and milestones.
 - [Thesis/Phase2plan.md](Thesis/Phase2plan.md): Phase 2 scope, validation criteria, and execution plan.
 - [Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md](Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md): equation provenance and project-specific adaptations.
+- [SupportingDocuments/EVIDENCE_SUMMARY.md](SupportingDocuments/EVIDENCE_SUMMARY.md): consolidated experimental evidence, geometry facts, source inventory, and missing inputs.
+- [SupportingDocuments/EXPERIMENT_TRACKER.md](SupportingDocuments/EXPERIMENT_TRACKER.md): living wind-tunnel configuration, test-matrix, metadata, and calibration-readiness record.
 
 ## Repository map
 
@@ -19,7 +21,7 @@ The current model focuses on airflow, pressure drop, and flow distribution. CO2 
 | `Thesis/simulations/srp_channel/` | Thesis-owned NGA2 channel model, inputs, tools, and preserved runs |
 | `Thesis/simulations/srp_channel/SIMULATION_GUIDE.md` | Model implementation, numerical evidence, and simulation-specific notes |
 | `OtherResearch/` | Research papers and notes on reusable methods |
-| `SupportingDocuments/` | Experimental correspondence, measurements, and supporting sources |
+| `SupportingDocuments/` | Consolidated evidence summary plus retained experimental correspondence, measurements, and supporting sources |
 | `NGA2/` | External NGA2 checkout used to build native simulations |
 
 The `NGA2/` directory is intentionally a separate Git repository and is not tracked by this repository. A fresh checkout of this project therefore requires NGA2 to be cloned separately; see [SETUP.md](SETUP.md).

@@ -1,4 +1,9 @@
 !> Rectangular SRP open-channel geometry.
+!>
+!> The physical passage is nonperiodic in x and bounded by stationary walls in
+!> y and z.  The underlying grid is periodic in y and z because the NGA2 FFT
+!> pressure solver requires those directions to be periodic; immersed-boundary
+!> walls separate the physical passage from the added periodic padding cells.
 module geometry
    use ibconfig_class, only: ibconfig
    use precision,      only: WP
@@ -43,6 +48,8 @@ contains
          z(k)=real(k-1,WP)/real(nz,WP)*Lz_grid-0.5_WP*Lz_grid
       end do
 
+      ! The x direction carries the imposed flow.  Periodicity in y and z is a
+      ! numerical property of the padded grid, not a physical open boundary.
       grid=sgrid(coord=cartesian,no=2,x=x,y=y,z=z,&
       &          xper=.false.,yper=.true.,zper=.true.,name='srp_channel')
 
@@ -63,6 +70,9 @@ contains
                      ! cross-section for uniform-flow verification.
                      cfg%Gib(i,j,k)=-min(Ly,Lz)
                   else
+                     ! Gib is negative in the rectangular passage and positive
+                     ! in the padding.  NGA2 converts this signed-distance-like
+                     ! field into wall normals and fluid volume fractions.
                      cfg%Gib(i,j,k)=max(abs(cfg%ym(j))-0.5_WP*Ly,&
                      &                  abs(cfg%zm(k))-0.5_WP*Lz)
                   end if
