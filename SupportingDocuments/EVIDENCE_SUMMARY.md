@@ -1,6 +1,6 @@
 # Supporting Evidence Summary
 
-Last reviewed: 2026-11-09
+Last reviewed: 2026-11-11
 
 ## Purpose and evidence rules
 
@@ -73,11 +73,13 @@ The consolidated thread reports the following chronology.
 - The preserved graph was previously read as `4.5`, `12.7`, `25.8`, `44.3`, and `65.2 Pa` at `1` through `5 m/s`.
 - This is aggregate assembly evidence and must not be used as a bead-bed porous coefficient without geometry, baseline, and uncertainty metadata.
 
-### Latest blank and packed-bead runs
+### November 5 blank, filter, and packed-bead workbook
 
-- The email states that blank-frame, one-filter, and packed-bead runs were completed on 2026-11-05.
-- Their numeric data are not available in the repository because `Pressure Drop of Filter.xlsx` is missing.
-- No permeability or inertial-resistance fit should be performed until that spreadsheet and its configuration metadata are recovered.
+- `Pressure Drop of Filter.xlsx` was recovered locally on 2026-11-11 and transcribed without filling its blank cells into `pressure_drop_filter_2026-11-05_raw.csv`.
+- The packed series is labeled `With Beads Filled in 40 micron Filter` and contains 21 points from `0.00-0.20 m/s`, rising from `0.0-28.4 Pa`.
+- The two-layer 40-micrometre filter series contains six points from `0.1-0.6 m/s` and `4.8-32.2 Pa`.  The blank stand is zero at `0.1-1.4 m/s` and rises to `1.8 Pa` at `3.0 m/s`.
+- A zero-intercept Darcy fit to the complete packed-filter series gives `Delta p = 139.8293 U Pa`, `RMSE = 0.8344 Pa`, and `R^2 = 0.98934`.  A free Darcy-Forchheimer fit gives a negative quadratic term and is rejected as nonphysical; the provisional model therefore sets `C2 = 0`.
+- Assuming the still-unverified `10.5 mm` filled thickness and `mu = 1.81e-5 Pa s`, the provisional effective assembly permeability is `1.35916e-9 m^2`.  This is not an isolated bead property, because matched mesh subtraction, thickness, air properties, and uncertainty remain unavailable.
 
 ## Historical sorbent and packet evidence
 

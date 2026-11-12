@@ -1,6 +1,6 @@
 # Wind Tunnel Experiment Tracker
 
-Last reviewed: 2026-11-09
+Last reviewed: 2026-11-11
 
 ## Purpose
 
@@ -89,7 +89,13 @@ A configuration is ready for Darcy-Forchheimer fitting only when:
 5. calibration and validation velocities can be separated; and
 6. uncertainty or repeatability information is available or explicitly marked unavailable.
 
-The current latest packet data do not yet pass these gates because `Pressure Drop of Filter.xlsx`, the holder drawing, photographs, thickness measurements, and run-to-configuration mapping are missing locally.
+The November 5 workbook is now local and supplies the packed-filter series,
+filter-only series, MT125 series, and blank-stand series.  It still does not
+pass the full calibration gates because the filled thickness, uncertainties,
+pressure-tap/holder geometry, air properties, photographs, and unambiguous
+specimen mapping are missing.  A provisional effective-assembly Darcy fit is
+documented in `PhysicalMeasurments/nov5_packed_filter_fit.md`; it must not be
+described as an isolated bead permeability.
 
 ## CFD mapping
 
@@ -106,7 +112,7 @@ The current latest packet data do not yet pass these gates because `Pressure Dro
 - **Samantha:** provide filled thickness for the `0.3 g` packet and the fully packed packet.
 - **Samantha/Ramesh:** assess the defined-aperture paired calibration fixture.
 - **Samantha/Ramesh/Lindsey:** report the maximum controllable wind-tunnel humidity.
-- **Experimental team:** provide `Pressure Drop of Filter.xlsx`, `windTunnelHolder.pdf`, the openness-method deck, and the two photographs.
+- **Experimental team:** provide `windTunnelHolder.pdf`, the openness-method deck, the two photographs, filled thickness, and measurement uncertainty.
 - **Leonardo:** map each received series to the configuration labels above before fitting coefficients.
 
 ## Source files
@@ -117,3 +123,6 @@ The current latest packet data do not yet pass these gates because `Pressure Dro
 - `PhysicalMeasurments/MT 125 micron Mesh dP data RK 10:19.docx`
 - `PhysicalMeasurments/MT 125 micron Mesh dP data RK 10:19.pdf`
 - `PhysicalMeasurments/mt_125_micron_two_layer_raw.csv`
+- `PhysicalMeasurments/Pressure Drop of Filter.xlsx`
+- `PhysicalMeasurments/pressure_drop_filter_2026-11-05_raw.csv`
+- `PhysicalMeasurments/nov5_packed_filter_fit.md`
