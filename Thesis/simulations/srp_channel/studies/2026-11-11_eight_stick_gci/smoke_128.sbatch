@@ -27,4 +27,13 @@ echo "Started: $(date --iso-8601=seconds)"
 
 srun --export=ALL "$exe" -i input
 
+test -s monitor/simulation
+test "$(awk 'END {print $1}' monitor/simulation)" = "10"
+test -s monitor/geometry_audit.csv
+test -s monitor/flow_band_geometry.csv
+if grep -RqiE 'nan|infinity|fatal|solver failure|error:' monitor; then
+  echo "Failure marker found in monitor output." >&2
+  exit 1
+fi
+
 echo "Finished: $(date --iso-8601=seconds)"

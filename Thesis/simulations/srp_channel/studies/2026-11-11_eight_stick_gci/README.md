@@ -32,10 +32,15 @@ tests, not experimentally calibrated pressure-drop predictions.
 
 ## Execution order
 
-1. Run `input.g1.smoke` with `smoke_128.sbatch` to verify the `16 x 4 x 2`
+1. Run `input.g1.smoke` with `smoke_128.sbatch` to verify the `16 x 8 x 1`
    decomposition, eight-stick mask, stability, memory, and Slurm launch.
 2. Create and smoke-test G2 and G3 using the same physical geometry.
 3. Run matched active and zero-resistance controls for G1-G3.
 4. Calculate observed order, Richardson extrapolation, and GCI with `r = 2`.
 5. Attempt G4 only if its smoke-test resource estimate is acceptable.
 
+The original job `1105006` tested `16 x 4 x 2` and failed before solver
+initialization because NGA2's FFT constructor requires at least one
+non-decomposed direction.  The corrected `16 x 8 x 1` layout leaves `z`
+undecomposed.  Post-run checks now reject missing or incomplete monitors so an
+MPI task failure cannot be reported as a successful batch job.

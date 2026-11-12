@@ -1,5 +1,5 @@
 # G1 eight-stick, single-layer 128-rank geometry and stability smoke test.
-Partition : 16 4 2
+Partition : 16 8 1
 nx : 192
 ny : 48
 nz : 48
@@ -28,4 +28,3 @@ Max timestep size : 2e-3
 Max cfl number : 0.8
 Max time : 2e-2
 Write Ensight output : F
-
