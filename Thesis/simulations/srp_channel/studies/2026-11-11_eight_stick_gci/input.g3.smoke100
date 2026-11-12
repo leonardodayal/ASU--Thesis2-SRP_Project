@@ -1,0 +1,30 @@
+# G3 eight-stick, single-layer 128-rank 100-step resource benchmark.
+Partition : 16 8 1
+nx : 768
+ny : 192
+nz : 192
+Wall padding cells : 8
+Lx : 4
+Ly : 1
+Lz : 1
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+Porous permeability : 0.01
+Forchheimer coefficient : 0
+Porous geometry : aligned_rods_z
+Porous slab start : 2
+Porous slab end : 2
+Rod count : 8
+Rod diameter : 0.105
+Rod center span : 0.875
+Rod sheet x : 2
+Sheet pressure offset : 0.2
+Pressure sample upstream : 1
+Pressure sample downstream : 3
+Flow split plane : 3
+Flow split bands : 8
+Max timestep size : 2e-3
+Max cfl number : 0.8
+Max time : 2e-1
+Write Ensight output : F

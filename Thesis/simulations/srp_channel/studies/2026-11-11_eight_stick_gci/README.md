@@ -49,3 +49,11 @@ Corrected Sol job `1120483` completed ten steps on 128 ranks in 13 solver
 seconds.  It produced all required monitors, eight identical rod areas with
 `0.00668939%` error, eight equal-width bands, no failure markers, and exit code
 `0`.  The largest reported task RSS was `138236K`.
+
+`input.g2.smoke100` and `smoke_g2_64.sbatch` define the next resource test:
+100 steps on the `384 x 96 x 96` G2 grid, using `16 x 4 x 1`, 64 ranks,
+128 GB, and a 15-minute limit.  This tests whether 64 ranks can keep a full G2
+run near the 15-minute target without waiting for an entire 128-core node.
+
+`input.g3.smoke100` and `smoke_g3_128.sbatch` define the subsequent G3 test,
+but G3 is not submitted until the G2 timing result is reviewed.
