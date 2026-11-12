@@ -72,3 +72,24 @@ rod areas (`-0.000986796%` error), equal bands, maximum CFL `0.500787`, final
 maximum divergence `1.71010e-11`, relative mass-flow error `1.44336e-14`, and
 maximum reported task RSS `759928K`.  The linear 2,000-step projection is
 about `2:04:20`.  G4 needs a separately sized memory/time request.
+
+## November 5 effective-resistance smoke sequence
+
+The recovered packed 40-micrometre-filter data support a provisional
+Darcy-only effective assembly fit.  With the unverified `10.5 mm` thickness,
+the physical permeability is `1.35916e-9 m^2`; normalized using a `0.10 m`
+reference length and `0.20 m/s` reference velocity, the solver inputs are
+`mu*=7.51661e-4`, `alpha*=1.35916e-7`, and `C2*=0`.
+
+Matched active/control 100-step jobs completed on all three grids:
+
+| Grid | Active job | Control job | Active/control solver time | Net sheet pressure at `t*=0.01` |
+|---|---:|---:|---:|---:|
+| G1 | `1126388` | `1126397` | `11/10 s` | `4.12 Pa` |
+| G2 | `1126507` | `1126508` | `33/33 s` | `2.94 Pa` |
+| G3 | `1126509` | `1126510` | `4:03/4:02` | `1.75 Pa` |
+
+All jobs exited zero, completed 100 steps at `dt*=1e-4`, conserved mass, and
+showed no failure markers.  The pressure values are startup transients and do
+not form a valid GCI sequence.  A longer time-history study must define a
+converged pressure averaging window before production GCI runs are submitted.
