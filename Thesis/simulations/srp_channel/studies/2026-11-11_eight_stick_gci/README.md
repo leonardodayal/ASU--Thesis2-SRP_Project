@@ -44,3 +44,8 @@ initialization because NGA2's FFT constructor requires at least one
 non-decomposed direction.  The corrected `16 x 8 x 1` layout leaves `z`
 undecomposed.  Post-run checks now reject missing or incomplete monitors so an
 MPI task failure cannot be reported as a successful batch job.
+
+Corrected Sol job `1120483` completed ten steps on 128 ranks in 13 solver
+seconds.  It produced all required monitors, eight identical rod areas with
+`0.00668939%` error, eight equal-width bands, no failure markers, and exit code
+`0`.  The largest reported task RSS was `138236K`.
