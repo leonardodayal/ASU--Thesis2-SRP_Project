@@ -1,5 +1,5 @@
-# G3 eight-stick, single-layer 128-rank 100-step resource benchmark.
-Partition : 16 8 1
+# G3 eight-stick, single-layer 64-rank 100-step resource benchmark.
+Partition : 16 4 1
 nx : 768
 ny : 192
 nz : 192

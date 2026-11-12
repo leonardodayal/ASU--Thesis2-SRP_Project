@@ -55,11 +55,13 @@ seconds.  It produced all required monitors, eight identical rod areas with
 128 GB, and a 15-minute limit.  This tests whether 64 ranks can keep a full G2
 run near the 15-minute target without waiting for an entire 128-core node.
 
-`input.g3.smoke100` and `smoke_g3_128.sbatch` define the subsequent G3 test,
-but G3 is not submitted until the G2 timing result is reviewed.
+`input.g3.smoke100` and `smoke_g3_64.sbatch` define the subsequent G3 test
+using the same 64-core allocation strategy as G2.
 
 G2 Sol job `1122564` completed 100 steps on 64 ranks in 53 solver seconds.
 All eight rod areas agree with `0.00802438%` error, all eight bands are equal,
 and no failure markers were found.  A linear 2,000-step projection is about
-`17:40`, slightly above the 15-minute target.  G3 job `1122809` was submitted
-after this review using 128 ranks and 256 GB.
+`17:40`, slightly above the 15-minute target.  The first G3 request, job
+`1122809`, was cancelled while pending without consuming resources.  G3 was
+changed to 64 ranks and 128 GB to reduce queue wait and keep allocations
+consistent for the initial resource study.
