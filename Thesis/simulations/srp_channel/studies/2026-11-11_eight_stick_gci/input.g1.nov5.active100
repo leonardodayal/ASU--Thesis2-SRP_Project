@@ -1,5 +1,5 @@
 # G1 eight-stick, November 5 effective packed-filter fit, 100-step smoke.
-Partition : 16 8 1
+Partition : 16 4 1
 nx : 192
 ny : 48
 nz : 48

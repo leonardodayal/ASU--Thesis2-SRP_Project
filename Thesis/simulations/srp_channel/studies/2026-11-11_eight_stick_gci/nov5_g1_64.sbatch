@@ -4,7 +4,7 @@
 #SBATCH --qos=public
 #SBATCH --account=grp_mherrma1
 #SBATCH --nodes=1
-#SBATCH --ntasks=128
+#SBATCH --ntasks=64
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=128G
 #SBATCH --time=00:15:00
