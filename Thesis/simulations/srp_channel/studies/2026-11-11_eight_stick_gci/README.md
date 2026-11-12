@@ -93,3 +93,20 @@ All jobs exited zero, completed 100 steps at `dt*=1e-4`, conserved mass, and
 showed no failure markers.  The pressure values are startup transients and do
 not form a valid GCI sequence.  A longer time-history study must define a
 converged pressure averaging window before production GCI runs are submitted.
+
+## G3 ParaView dataset
+
+Sol job `1131103` reran the active G3 case with Ensight output enabled.  It
+completed in `6:17` solver time (`6:22` batch) on 64 ranks with exit code `0`,
+no failure markers, and maximum task RSS `791272K`.  The output is `1.4 GB`
+and contains two states of geometry, wall volume fraction, porous mask,
+pressure, and velocity.
+
+The authoritative cluster copy is:
+
+`$SCRATCH/srp_benchmark/nov5_g3_visualization100_64/ensight`
+
+Copy it to the Git-ignored `paraview_data/` directory beside this README and
+open `paraview_data/srp_channel/nga.case`.  The final state is startup flow at
+`t*=0.01`; it is appropriate for explaining the model and mesh, not for a
+converged pressure or GCI claim.
