@@ -65,3 +65,10 @@ and no failure markers were found.  A linear 2,000-step projection is about
 `1122809`, was cancelled while pending without consuming resources.  G3 was
 changed to 64 ranks and 128 GB to reduce queue wait and keep allocations
 consistent for the initial resource study.
+
+Replacement G3 job `1123065` completed 100 steps on 64 ranks in `6:13`
+solver time.  It passed with exit code `0`, no failure markers, eight identical
+rod areas (`-0.000986796%` error), equal bands, maximum CFL `0.500787`, final
+maximum divergence `1.71010e-11`, relative mass-flow error `1.44336e-14`, and
+maximum reported task RSS `759928K`.  The linear 2,000-step projection is
+about `2:04:20`.  G4 needs a separately sized memory/time request.
