@@ -76,6 +76,42 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Distinguish verified results from provisional values and pending work. Record the evidence date and source where it affects interpretation.
 - Do not make timestamp-only or wording-only status edits when nothing material changed.
 
+## 6. Use a Simple Trunk-Based Git Workflow
+
+**Keep `main` as the only permanent branch.**
+
+- Keep `main` stable and always create branches from the latest `main`.
+- Create one short-lived branch per logical change.
+- Use descriptive prefixes such as `feature/`, `fix/`, `docs/`, and `experiment/`.
+- Open each pull request directly into `main`.
+- Delete the local and remote feature branch after its pull request is merged and `main` is verified.
+- Avoid long-lived integration branches unless several dependent features genuinely require coordination.
+- Use milestone tags for important thesis snapshots, such as `phase2-baseline` or `gci-ready`.
+- Use separate Git worktrees when multiple agents or experiments need simultaneous changes.
+- Stage explicit paths rather than `git add -A` when unrelated generated or untracked files are present.
+
+Typical branch structure:
+
+```text
+main
+├── feature/mesh-calibration
+├── feature/convergence-horizon
+├── feature/gci-production
+└── docs/thesis-results
+```
+
+Typical flow:
+
+```bash
+git switch main
+git pull --ff-only
+git switch -c feature/convergence-horizon
+# work, test, and commit
+git push -u origin feature/convergence-horizon
+# open a pull request into main
+# merge, verify main, then delete the branch
+```
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
