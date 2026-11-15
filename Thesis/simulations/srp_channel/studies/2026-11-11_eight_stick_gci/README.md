@@ -110,3 +110,25 @@ Copy it to the Git-ignored `paraview_data/` directory beside this README and
 open `paraview_data/srp_channel/nga.case`.  The final state is startup flow at
 `t*=0.01`; it is appropriate for explaining the model and mesh, not for a
 converged pressure or GCI claim.
+
+## Sealed-wall and retaining-mesh geometry smoke
+
+`input.g1.walls_mesh.smoke` opts into the packet refinements added on
+2026-11-15. It represents the seven `0.02`-thick internal thermo-sealed
+dividers and closes the two outer-stick gaps to the channel walls. The sharp
+immersed-boundary geometry uses a one-cell minimum numerical wall thickness
+when the requested seal is under-resolved. It also wraps every bead stick in a
+separate one-cell porous annulus exported as `mesh_mask`.
+
+The mesh source accepts integrated `Mesh linear resistance` and
+`Mesh quadratic resistance` values and divides them by the actual represented
+layer thickness. Each value describes one traversal of the mesh skin; normal
+flow through the closed annulus crosses its upstream and downstream sides. The
+input's value is synthetic and tests implementation only.
+A local four-rank, two-step G1 run found exactly nine wall segments and distinct
+nonempty `porous_mask` and `mesh_mask` fields. The corrected mask contains
+`4,200` mesh-positive cells outside the bead mask, confirming that the complete
+annulus is represented. Representative reruns ended with
+CFL about `0.0056`, maximum divergence about `3.2e-13`, and relative mass-flow
+error about `5e-15`.
+Do not use this smoke result as a calibrated pressure-drop prediction.

@@ -28,8 +28,9 @@ module simulation
 
    real(WP), dimension(:,:,:), allocatable :: resU,resV,resW
    real(WP), dimension(:,:,:), allocatable :: Ui,Vi,Wi
-   real(WP), dimension(:,:,:), allocatable :: chi_p,speed_mag
-   real(WP) :: darcy_coeff,forchheimer_coeff,x_pressure_up,x_pressure_down
+   real(WP), dimension(:,:,:), allocatable :: chi_p,chi_mesh,speed_mag
+   real(WP) :: darcy_coeff,forchheimer_coeff,mesh_darcy_coeff
+   real(WP) :: mesh_forchheimer_coeff,x_pressure_up,x_pressure_down
    integer, parameter :: rod_fraction_subcells=64
    integer :: n_flow_bands
    real(WP) :: x_flow_split,y_flow_min,y_flow_max
@@ -320,6 +321,7 @@ contains
       allocate(Vi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(Wi  (cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(chi_p(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
+      allocate(chi_mesh(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       allocate(speed_mag(cfg%imino_:cfg%imaxo_,cfg%jmino_:cfg%jmaxo_,cfg%kmino_:cfg%kmaxo_))
       time=timetracker(amRoot=cfg%amRoot)
       call param_read('Max timestep size',time%dtmax)
@@ -339,6 +341,9 @@ contains
          integer :: i,j,k,l,m,n,n_rods,n_sheets,ierr,iunit
          real(WP) :: visc,Uin,alpha,x_start,x_end
          real(WP) :: rod_diameter,rod_span,rod_y,sheet_x,cell_fraction
+         real(WP) :: inner_fraction,outer_fraction,mesh_thickness
+         real(WP) :: mesh_linear_resistance,mesh_quadratic_resistance
+         integer :: mesh_layer_cells
          real(WP) :: sheet_spacing,stack_center_x,sheet_pressure_offset
          real(WP) :: default_sheet_pressure_offset,nominal_rod_area,max_area_error
          real(WP), dimension(:,:), allocatable :: my_rod_area,rod_area
@@ -368,6 +373,18 @@ contains
          ! Store the linear coefficient once; the velocity-dependent inertial
          ! contribution is evaluated on every staggered face during time stepping.
          darcy_coeff=visc/alpha
+         mesh_layer_cells=0
+         call param_read('Mesh layer cells',mesh_layer_cells,default=0)
+         mesh_linear_resistance=0.0_WP
+         mesh_quadratic_resistance=0.0_WP
+         if (param_exists('Mesh linear resistance')) &
+         &  call param_read('Mesh linear resistance',mesh_linear_resistance)
+         if (param_exists('Mesh quadratic resistance')) &
+         &  call param_read('Mesh quadratic resistance',mesh_quadratic_resistance)
+         if (mesh_layer_cells.lt.0) error stop 'Mesh layer cells must be nonnegative'
+         if (mesh_linear_resistance.lt.0.0_WP.or.mesh_quadratic_resistance.lt.0.0_WP) &
+         &  error stop 'Mesh resistance coefficients must be nonnegative'
+         mesh_darcy_coeff=0.0_WP; mesh_forchheimer_coeff=0.0_WP
          call fs%add_bcond(name='inflow', type=dirichlet,&
          &                 locator=left_of_domain,face='x',dir=-1,canCorrect=.false.)
          call fs%add_bcond(name='outflow',type=clipped_neumann,&
@@ -381,6 +398,7 @@ contains
          ! chi_p is the cell-centered porous volume fraction used to localize
          ! resistance.  It is distinct from cfg%VF, the fluid fraction of walls.
          chi_p=0.0_WP
+         chi_mesh=0.0_WP
          select case (trim(porous_geometry))
          case ('slab')
             do k=cfg%kmino_,cfg%kmaxo_
@@ -409,6 +427,16 @@ contains
             if (rod_diameter.le.0.0_WP) error stop 'Rod diameter must be positive'
             if (rod_span.lt.0.0_WP) error stop 'Rod center span must be nonnegative'
             if (sheet_spacing.lt.0.0_WP) error stop 'Sheet spacing must be nonnegative'
+            mesh_thickness=real(mesh_layer_cells,WP)*minval(cfg%dx(cfg%imin_:cfg%imax_))
+            mesh_thickness=min(mesh_thickness,&
+            &  real(mesh_layer_cells,WP)*minval(cfg%dy(cfg%jmin_:cfg%jmax_)))
+            if (mesh_layer_cells.gt.0) then
+               ! These are integrated coefficients for one traversal of the
+               ! represented mesh skin.  Normal flow through a closed annulus
+               ! traverses its upstream and downstream sides separately.
+               mesh_darcy_coeff=mesh_linear_resistance/mesh_thickness
+               mesh_forchheimer_coeff=mesh_quadratic_resistance/mesh_thickness
+            end if
             if (n_sheets.gt.1) then
                default_sheet_pressure_offset=0.5_WP*sheet_spacing
             else
@@ -449,6 +477,11 @@ contains
                      do i=cfg%imino_,cfg%imaxo_
                         cell_fraction=circle_cell_fraction(cfg%x(i),cfg%x(i+1),&
                         &  cfg%y(j),cfg%y(j+1),sheet_x,rod_y,0.5_WP*rod_diameter)
+                        inner_fraction=cell_fraction
+                        outer_fraction=inner_fraction
+                        if (mesh_layer_cells.gt.0) outer_fraction=circle_cell_fraction(&
+                        &  cfg%x(i),cfg%x(i+1),cfg%y(j),cfg%y(j+1),sheet_x,rod_y,&
+                        &  0.5_WP*rod_diameter+mesh_thickness)
                         if (i.ge.cfg%imin_.and.i.le.cfg%imax_.and.&
                         &   j.ge.cfg%jmin_.and.j.le.cfg%jmax_.and.cfg%kproc.eq.1) then
                            my_rod_area(l,m)=my_rod_area(l,m)+cell_fraction*&
@@ -456,10 +489,14 @@ contains
                            if (cell_fraction.gt.0.0_WP.and.cell_fraction.lt.1.0_WP) &
                            &  my_partial_cells(l,m)=my_partial_cells(l,m)+1
                         end if
-                        if (cell_fraction.le.0.0_WP) cycle
+                        ! Keep annulus-only cells: they have zero bead fraction
+                        ! but a positive outer mesh fraction.
+                        if (outer_fraction.le.0.0_WP) cycle
                         do k=cfg%kmino_,cfg%kmaxo_
                            if (cfg%VF(i,j,k).gt.0.5_WP) &
                            &  chi_p(i,j,k)=max(chi_p(i,j,k),cell_fraction)
+                           if (cfg%VF(i,j,k).gt.0.5_WP.and.outer_fraction.gt.inner_fraction) &
+                           &  chi_mesh(i,j,k)=max(chi_mesh(i,j,k),outer_fraction-inner_fraction)
                         end do
                      end do
                   end do
@@ -493,6 +530,7 @@ contains
             error stop 'Unknown porous geometry'
          end select
          call cfg%sync(chi_p)
+         call cfg%sync(chi_mesh)
          fs%U=0.0_WP; fs%V=0.0_WP; fs%W=0.0_WP
          do k=cfg%kmin_,cfg%kmax_
             do j=cfg%jmin_,cfg%jmax_
@@ -531,6 +569,7 @@ contains
          call ens_out%add_scalar('pressure',fs%P)
          call ens_out%add_scalar('wall_vf',cfg%VF)
          call ens_out%add_scalar('porous_mask',chi_p)
+         call ens_out%add_scalar('mesh_mask',chi_mesh)
          if (ens_evt%occurs()) call ens_out%write_data(time%t)
       end if
 
@@ -661,7 +700,7 @@ contains
             call fs%get_dmomdt(resU,resV,resW)
             add_porous_resistance: block
                integer :: i,j,k
-               real(WP) :: chi_face,drag_coeff,speed_face
+               real(WP) :: chi_face,mesh_face,drag_coeff,speed_face
                ! Speed is most naturally calculated at cell centers, then both
                ! speed and the porous mask are interpolated to NGA2's staggered
                ! velocity faces before adding component-wise resistance.
@@ -678,14 +717,23 @@ contains
                         ! direction, so the implemented resistance is isotropic.
                         drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
                         resU(i,j,k)=resU(i,j,k)-drag_coeff*chi_face*fs%U(i,j,k)
+                        mesh_face=sum(fs%itpr_x(:,i,j,k)*chi_mesh(i-1:i,j,k))
+                        drag_coeff=mesh_darcy_coeff+mesh_forchheimer_coeff*speed_face
+                        resU(i,j,k)=resU(i,j,k)-drag_coeff*mesh_face*fs%U(i,j,k)
                         chi_face=sum(fs%itpr_y(:,i,j,k)*chi_p(i,j-1:j,k))
                         speed_face=sum(fs%itpr_y(:,i,j,k)*speed_mag(i,j-1:j,k))
                         drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
                         resV(i,j,k)=resV(i,j,k)-drag_coeff*chi_face*fs%V(i,j,k)
+                        mesh_face=sum(fs%itpr_y(:,i,j,k)*chi_mesh(i,j-1:j,k))
+                        drag_coeff=mesh_darcy_coeff+mesh_forchheimer_coeff*speed_face
+                        resV(i,j,k)=resV(i,j,k)-drag_coeff*mesh_face*fs%V(i,j,k)
                         chi_face=sum(fs%itpr_z(:,i,j,k)*chi_p(i,j,k-1:k))
                         speed_face=sum(fs%itpr_z(:,i,j,k)*speed_mag(i,j,k-1:k))
                         drag_coeff=darcy_coeff+0.5_WP*fs%rho*forchheimer_coeff*speed_face
                         resW(i,j,k)=resW(i,j,k)-drag_coeff*chi_face*fs%W(i,j,k)
+                        mesh_face=sum(fs%itpr_z(:,i,j,k)*chi_mesh(i,j,k-1:k))
+                        drag_coeff=mesh_darcy_coeff+mesh_forchheimer_coeff*speed_face
+                        resW(i,j,k)=resW(i,j,k)-drag_coeff*mesh_face*fs%W(i,j,k)
                      end do
                   end do
                end do
@@ -767,7 +815,7 @@ contains
          call sheetfile%finalize()
          call sheetsplitfile%finalize()
       end if
-      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,speed_mag,band_mfr,band_fraction,&
+      deallocate(resU,resV,resW,Ui,Vi,Wi,chi_p,chi_mesh,speed_mag,band_mfr,band_fraction,&
       &          y_band_edge)
       if (n_pressure_sheets.gt.0) deallocate(x_sheet_pressure_up,x_sheet_pressure_down,&
       &  sheet_pressure_up,sheet_pressure_down,sheet_delta_p,sheet_band_mfr,&

@@ -17,12 +17,16 @@ module geometry
 contains
 
    subroutine geometry_init
-      use param,       only: param_read
+      use param,       only: param_read,param_exists
       use sgrid_class, only: sgrid,cartesian
       implicit none
       type(sgrid) :: grid
-      integer :: i,j,k,nx,ny,nz,npad
+      integer :: i,j,k,l,m,nx,ny,nz,npad,n_rods,n_sheets
       real(WP) :: Lx,Ly,Lz,dy,dz,Ly_grid,Lz_grid
+      real(WP) :: rod_diameter,rod_span,sheet_x,stack_center_x,sheet_spacing
+      real(WP) :: separator_thickness,separator_depth,separator_y,divider_gib
+      real(WP) :: divider_ylo,divider_yhi,divider_height
+      character(len=32) :: porous_geometry
       real(WP), dimension(:), allocatable :: x,y,z
 
       ! Lx, Ly, and Lz describe the open passage. Extra cells outside Ly and
@@ -79,6 +83,82 @@ contains
                end do
             end do
          end do
+
+         ! Optional thermo-sealed dividers between adjacent bead sticks plus
+         ! edge closures from the two outer sticks to the channel walls.  The
+         ! dividers span z and are rectangular in the x-y sheet cross-section.
+         ! A positive Gib value denotes solid, so max() forms the union of the
+         ! channel walls and every divider.  A zero default preserves all
+         ! historical inputs exactly.
+         separator_thickness=0.0_WP
+         if (param_exists('Separator wall thickness')) &
+         &  call param_read('Separator wall thickness',separator_thickness)
+         if (separator_thickness.lt.0.0_WP) &
+         &  error stop 'Separator wall thickness must be nonnegative'
+         if (separator_thickness.gt.0.0_WP) then
+            call param_read('Porous geometry',porous_geometry,default='slab')
+            if (trim(porous_geometry).ne.'aligned_rods_z'.and.&
+            &   trim(porous_geometry).ne.'stacked_aligned_rods_z') &
+            &  error stop 'Separator walls require an aligned-rod geometry'
+            call param_read('Rod count',n_rods)
+            call param_read('Rod diameter',rod_diameter)
+            call param_read('Rod center span',rod_span)
+            separator_depth=rod_diameter
+            if (param_exists('Separator wall depth')) &
+            &  call param_read('Separator wall depth',separator_depth)
+            if (n_rods.lt.2) error stop 'Separator walls require at least two rods'
+            if (separator_depth.le.0.0_WP) &
+            &  error stop 'Separator wall depth must be positive'
+            if (trim(porous_geometry).eq.'aligned_rods_z') then
+               call param_read('Rod sheet x',stack_center_x)
+               n_sheets=1
+               sheet_spacing=0.0_WP
+            else
+               call param_read('Sheet count',n_sheets)
+               call param_read('Sheet spacing',sheet_spacing)
+               call param_read('Stack center x',stack_center_x)
+            end if
+            do m=1,n_sheets
+               sheet_x=stack_center_x+(real(m-1,WP)-&
+               &       0.5_WP*real(n_sheets-1,WP))*sheet_spacing
+               do l=0,n_rods
+                  if (l.eq.0) then
+                     divider_ylo=-0.5_WP*Ly
+                     divider_yhi=-0.5_WP*rod_span-0.5_WP*rod_diameter
+                  else if (l.eq.n_rods) then
+                     divider_ylo=0.5_WP*rod_span+0.5_WP*rod_diameter
+                     divider_yhi=0.5_WP*Ly
+                  else
+                     separator_y=-0.5_WP*rod_span+(real(l,WP)-0.5_WP)*&
+                     &           rod_span/real(n_rods-1,WP)
+                     divider_ylo=separator_y-0.5_WP*separator_thickness
+                     divider_yhi=separator_y+0.5_WP*separator_thickness
+                  end if
+                  if (divider_yhi.lt.divider_ylo) &
+                  &  error stop 'Outer rod extends beyond the channel wall'
+                  divider_height=divider_yhi-divider_ylo
+                  if (divider_height.le.0.0_WP) cycle
+                  separator_y=0.5_WP*(divider_ylo+divider_yhi)
+                  ! The sharp immersed-boundary reconstruction requires at
+                  ! least one positive cell-center sample.  Preserve the
+                  ! requested thickness when resolved; otherwise use one y
+                  ! cell so a thin seal cannot disappear on a coarse grid.
+                  divider_height=max(divider_height,&
+                  &  1.1_WP*minval(cfg%dy(cfg%jmin_:cfg%jmax_)))
+                  do k=cfg%kmino_,cfg%kmaxo_
+                     do j=cfg%jmino_,cfg%jmaxo_
+                        do i=cfg%imino_,cfg%imaxo_
+                           divider_gib=min(0.5_WP*separator_depth-&
+                           &               abs(cfg%xm(i)-sheet_x),&
+                           &               0.5_WP*divider_height-&
+                           &               abs(cfg%ym(j)-separator_y))
+                           cfg%Gib(i,j,k)=max(cfg%Gib(i,j,k),divider_gib)
+                        end do
+                     end do
+                  end do
+               end do
+            end do
+         end if
          call cfg%calculate_normal()
          call cfg%calculate_vf(method=sharp,allow_zero_vf=.false.)
       end block create_rectangular_walls

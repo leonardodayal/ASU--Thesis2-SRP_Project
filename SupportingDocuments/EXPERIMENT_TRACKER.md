@@ -1,6 +1,6 @@
 # Wind Tunnel Experiment Tracker
 
-Last reviewed: 2026-11-11
+Last reviewed: 2026-11-15
 
 ## Purpose
 
@@ -102,6 +102,8 @@ described as an isolated bead permeability.
 - Use the defined-aperture paired experiment to fit porous coefficients with the simplest supported geometry.
 - Use the empty and fully packed stick packets to validate explicit pocket geometry after calibration.
 - Treat the underfilled `0.3 g` packet as an uneven-fill sensitivity case if its geometry can be reconstructed.
+- Implemented provisional geometry: represent the bead-holding mesh as a one-computational-cell-thick porous annulus surrounding each bead-filled stick instead of lumping mesh and beads into one `alpha`. Its volumetric resistance is scaled to preserve an integrated mesh pressure loss as cell size changes. Separate mesh calibration is still pending.
+- Implemented provisional geometry: seven inter-stick divider regions plus upper and lower closures to the channel walls are represented as solid walls. The `2 mm` requested thickness uses a one-cell minimum where under-resolved. This remains provisional until the thermo-sealed lines are confirmed airtight.
 - Do not represent the thermo-sealed regions as porous until airtightness is confirmed. If airtight, model them as solid blockage.
 - Resolve the confirmed filled thickness with at least the advisor-requested minimum cell count before production runs.
 - Treat the later flow-parallel assembly with upper and lower bypass passages as a separate model.
