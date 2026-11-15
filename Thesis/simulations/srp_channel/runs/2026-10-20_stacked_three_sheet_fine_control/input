@@ -1,0 +1,32 @@
+# Matched full finer-grid zero-resistance control for grid sensitivity.
+Partition : 4 1 1
+nx : 384
+ny : 96
+nz : 96
+Wall padding cells : 3
+Lx : 4
+Ly : 1
+Lz : 1
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+Porous permeability : 1e30
+Forchheimer coefficient : 0
+Porous geometry : stacked_aligned_rods_z
+Porous slab start : 2
+Porous slab end : 2
+Rod count : 4
+Rod diameter : 0.1
+Rod center span : 0.6
+Sheet count : 3
+Sheet spacing : 0.5
+Stack center x : 2
+Sheet pressure offset : 0.25
+Pressure sample upstream : 1
+Pressure sample downstream : 3
+Flow split plane : 3
+Flow split bands : 4
+Max timestep size : 2e-3
+Max cfl number : 0.8
+Max time : 4
+Ensight output period : 1

@@ -1,1 +1,2 @@
-# Add geometry.f90 and simulation.f90 when their implementations are ready.
+# Thesis-owned open-channel driver
+f90EXE_sources += geometry.f90 simulation.f90

@@ -20,20 +20,57 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 ## Current status
 
 - NGA2 and the stock periodic channel example have already been built and run with four MPI ranks.
-- `Thesis/simulations/srp_channel` now contains the thesis-owned case scaffold, build configuration, target mesh input, and run directory.
-- `geometry.f90` and `simulation.f90` are still placeholders, so the SRP case does not yet compile or run.
-- The target resolution is recorded as `nx = 256`, `ny = 64`, and `nz = 64`; physical dimensions and operating conditions are intentionally unset.
+- `Thesis/simulations/srp_channel` contains the implemented thesis-owned empty-channel case, build configuration, debug/target inputs, and dated run evidence.
+- Four-rank MPI smoke tests have completed on `32 x 12 x 12` and target `256 x 64 x 64` meshes with bounded CFL/divergence and mass-flow balance near machine precision.
+- The target-mesh Ensight output has been opened and inspected successfully in ParaView; the fluid passage and velocity, pressure, and wall-volume-fraction fields render as intended.
+- Work Plan Steps 2 and 3 are complete for the provisional numerical model. Steps 4 and 5 are partially complete: resistance scaling, the aligned single-sheet geometry, a provisional stack, matched open/rod runs, and per-sheet pressure accounting are verified, while physical calibration and advisor-selected arrangements remain pending.
+- Physical dimensions and operating conditions remain provisional. The one-flow-through open, single-sheet, three-sheet, and matched zero-resistance control runs are numerically converged under those provisional inputs; none is a calibrated physical pressure-drop prediction.
+- A Darcy-Forchheimer porous slab and exported porous mask are implemented. The linear and inertial terms were independently verified against uniform analytical references. A configurable provisional four-rod aligned mask also passes a target-mesh geometry and solver smoke test. Fitted material coefficients and advisor-selected physical geometry remain pending.
+- ParaView slices from the four-rod smoke test show velocity deficits aligned with all four porous rods and acceleration through the intervening gaps. This confirms qualitative source/flow interaction at the short final time (`t = 0.02`), but does not establish a converged or physically meaningful pressure drop.
+- A 2026-10-19 email from Justin includes a preliminary plot for a 20-sheet Excellion assembly at 5 mm spacing and requests an empty-packet or single-mesh through-flow measurement by 2026-10-23. The aggregate plot lacks the metadata needed to assign physical porous coefficients, so the calibration blocker is only partially advanced.
+- Ramesh's 2026-10-19 reply supplies 29 measurements for two MT 125-micron polyester-mesh layers on a custom stand: `1.6-75.6 Pa` over `0.1-2.9 m/s`. The table reproduces the plotted assembly correlation `Delta p = 13.3676 U + 4.42639 U^2` Pa (`RMSE = 0.313 Pa`, `R^2 = 0.999805`). The blank `3.0 m/s` row is not a measured point. Missing empty-stand baseline, geometry, percent-open-area, effective-length, uncertainty, air-property, and velocity-definition metadata still prevent a defensible mesh-only or bead-bed coefficient fit.
+- The source values are preserved in `SupportingDocuments/PhysicalMeasurments/mt_125_micron_two_layer_raw.csv` as 29 measured rows plus the explicit missing row; the transcription and reproduced fit were independently verified on 2026-10-20.
+- The consolidated email thread through 2026-11-05 reports a `10 cm x 10 cm` packet opening with eight horizontal pockets, nominal pocket width `1.25 cm` before seal subtraction, and about `0.3 g` of unexchanged Purolite A501P chloride-form resin per pocket. It describes both a CMS25 nylon packet (`25 micrometre`, `12.02%` open) and a packed-bead run using a `40-micrometre` filter, likely as separate configurations. Blank-frame and packed-bead tests were completed, yet the referenced spreadsheet, jig drawing, openness deck, and photos are missing locally. Treat the new geometry as reported evidence and do not calibrate until every series is mapped to its packet configuration and the missing numeric data are recovered; see `SupportingDocuments/EVIDENCE_SUMMARY.md`.
+- A calibration-ready fitting tool now implements Project Eqs. P1-P2 with baseline subtraction, uncertainty weighting, calibration/validation splits, and synthetic coefficient-recovery tests. Physical calibration remains pending.
+- Nine uniform-slab NGA2 cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
+- A configurable downstream flow-split monitor implements Project Eqs. P6-P7 over equal-width bands. Its four-band MPI verification conserves total mass flow at monitor precision, preserves symmetry, and remains backward-compatible with historical inputs.
+- Matched one-flow-through open and provisional aligned four-rod runs pass the numerical convergence rule. Relative to the open case, the synthetic rods reduce four-band CV by `1.06811%` and increase total pressure drop by `2.65518%`; physical interpretation remains blocked by unconfirmed geometry and coefficients.
+- A configurable provisional stack now repeats the verified aligned sheet by count and spacing. A three-sheet target-mesh smoke test confirms three separated sheet groups, four separated rods per sheet, exclusion of wall padding, stable flow, and backward-compatible single-sheet behavior.
+- Per-sheet pressure diagnostics report each sheet drop, the sum, the sampled whole-stack drop, and closure error. A three-sheet smoke test telescopes exactly at monitor precision; non-rod and historical single-sheet regression cases pass.
+- Per-sheet flow-split diagnostics now report equal-width band rates, fractions, and P7 CV after every sheet. A three-sheet smoke test conserves flow at every plane, preserves symmetry, and passes open/single-sheet regressions.
+- The provisional three-sheet stack and matched zero-resistance control completed one flow-through time and pass the numerical convergence rule. Control subtraction shows local sheet-plane pressure increments of `0.0340160`, `0.0421726`, and `0.0463172`; resistance lowers P7 CV relative to control by `3.20851%`, `4.42426%`, and `4.61025%`. The raw downstream CV increase is primarily background wall-profile development.
+- A matched `128 x 32 x 32` resistance-active/control pair passes the same checks. Relative to the `256 x 64 x 64` pair, Project Eq. P15 changes are at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes. A finer-than-target pair is still required for formal grid independence.
+- Halving the target-grid timestep from `0.002` to `0.001` changes total pressure drop by `0.289417%`, sheet drops by at most `0.179043%`, and per-sheet P7 CV by at most `0.207011%`, passing the predeclared `1%` working time-step-sensitivity criterion.
+- A short `384 x 96 x 96` feasibility run fits in memory and completes stably on four ranks. It resolves each rod diameter with 10 streamwise cells and gives identical `25,920`-cell masks for all three sheets. A full matched finer-grid pair is projected to require about `83–107 min` total.
+- The full matched `384 x 96 x 96` active/control pair now completes one flow-through time and passes the numerical checks. Project Eq. P15 target-to-fine changes are `4.49272%` for corrected total pressure, up to `4.75564%` for local sheet increments, and up to `10.7750%` for corrected P7 changes. Coarse and fine corrected pressure agree more closely than target and fine, and the 90-cell fine passage cannot be divided evenly into four integer-cell bands. The result is non-monotonic and does not establish formal grid independence.
+- The diagnosis found that binary cell-center masking overrepresented coarse and target rod area by `6.1033%`, compared with `0.2087%` on the fine grid, and that whole-row assignment gave unequal physical band widths on the coarse and fine grids. The solver now uses fractional circular-cell coverage, physical-overlap band integration, and exact-plane interpolation. A three-grid ten-step MPI test reduces maximum rod-area error to `0.002874%`, limits cross-grid area spread to `0.00287824%`, makes all bands exactly `0.25` wide, and passes the numerical checks. The analytical nine-case porous regression remains exact at recorded precision.
+- Corrected full-duration coarse, target, and fine active/control pairs pass all numerical checks. Corrected total pressure and per-sheet quantities vary monotonically across the three grids. Project Eq. P15 target-to-fine changes are `1.35643%` for total corrected pressure, `1.21755-1.45490%` for sheet increments, and `2.04532-2.57712%` for corrected P7 changes. These pass the working `2%` pressure and `5%` P7 gates, identifying the coarse grid as pre-asymptotic and accepting the target grid for provisional aligned-stack comparisons.
+- A 2026-11-06 ASU Sol strong-scaling check reran the corrected fine active case with identical physics. Four ranks completed in `55:43`; eight ranks completed in `42:20` (`1.316x` speedup and about `65.8%` rank-doubling efficiency). Both reached `t = 4` in 2,000 steps, and their final monitors agree at printed precision. Use eight ranks as the current practical Sol configuration for this fine case; test higher rank counts separately rather than assuming linear scaling.
+- Advisor-directed grid planning reported 2026-11-11 now uses `192 x 48 x 48`, `384 x 96 x 96`, `768 x 192 x 192`, and `1536 x 384 x 384` for one layer of eight experimental-style sticks, using up to 128 Sol cores. The constant refinement ratio is `r = 2`; the first three levels are sufficient for a standard three-grid GCI calculation. The 226,492,416-cell fourth level must remain conditional until smoke jobs establish its memory and projected wall time.
+- A repository-owned G1 smoke input and Slurm script implement the eight-stick single layer with `192 x 48 x 48` and eight flow bands. The normalized `0.105` circular diameter and `0.875` center span reproduce the reported pocket pitch and `2 mm` separator, but the implied streamwise thickness is provisional. A local four-rank copy passed its ten-step geometry/input smoke test on 2026-11-11. Sol job `1105006` rejected `16 x 4 x 2` because the FFT solver requires one non-decomposed direction. Corrected job `1120483` used `16 x 8 x 1` on 128 ranks and completed ten steps in 13 solver seconds with exit code `0`, eight identical rod areas (`0.00668939%` error), eight equal `0.125`-width bands, no error markers, and final maximum divergence `2.10491e-14`. This validates the decomposition for G1; G2-G3 memory and timing smokes remain required.
+- G2 job `1122564` used the new eight-stick single layer on `384 x 96 x 96` with 64 ranks and completed 100 steps in 53 solver seconds; its 2,000-step projection is about `17:40`. G3 job `1123065` used `768 x 192 x 192` on 64 ranks and completed 100 steps in `6:13`, projecting to about `2:04:20` for 2,000 steps. G3 passed with exit code `0`, no failure markers, identical rod areas (`-0.000986796%` error), equal bands, maximum CFL `0.500787`, final maximum divergence `1.71010e-11`, relative mass-flow error `1.44336e-14`, and maximum reported task RSS `759928K`. G4 cannot use the 15-minute/128 GB template; smoke-test sizing must account for its eightfold cell increase over G3.
+- The November 5 packed 40-micrometre-filter data were recovered on 2026-11-11. Across `0.00-0.20 m/s`, a physically constrained Darcy-only fit gives `Delta p = 139.8293 U Pa`; a free quadratic fit is nonphysical. The initial calibrated resolution sequence therefore uses `C2=0` and, provisionally assuming a `10.5 mm` filled thickness, `alpha=1.35916e-9 m^2`. Normalize with the `0.10 m` opening and `0.20 m/s` maximum measured velocity, validate G1 stability with `dt <= 1e-4`, and only then submit matched active/control G1-G3 cases. Use the valid 64-rank `16 x 4 x 1` G1 decomposition after the first 128-rank request (`1126264`) was cancelled pending without allocation. Treat the coefficient as an effective packed-filter assembly value until thickness and matched mesh/control metadata arrive.
+- G1 active job `1126388` and matched control `1126397` verified the normalized November 5 inputs for 100 steps on 64 ranks, completing in 11 and 10 solver seconds with exit code `0`, stable `dt*=1e-4`, negligible mass-flow error, and no failure markers. Continue the same 100-step paired check on G2 and G3 before choosing a physical convergence horizon. The G1 pressure result is still a startup transient and is not experimental validation.
+- The matched 100-step G2 jobs `1126507`/`1126508` completed in 33 solver seconds each, and G3 jobs `1126509`/`1126510` completed in `4:03`/`4:02`. All passed stability, conservation, geometry, and failure-marker checks. Their active-minus-control sheet pressure changes from approximately `4.12 Pa` on G1 to `2.94 Pa` on G2 and `1.75 Pa` on G3 at the common `t*=0.01`; this is a startup-horizon sensitivity, not a valid GCI sequence. Establish an objective pressure/conservation convergence window on G1 or G2 before selecting production end time and budgeting full G1-G3 pairs.
+- For presentation graphics, rerun the 100-step active G3 case with a single final-time Ensight write. Store the generated `768 x 192 x 192` pressure, velocity, wall, and porous-mask fields in Sol scratch and copy them locally for ParaView; commit only the reproducible input/script and recorded evidence, not the large generated dataset. Treat the image as a startup-flow visualization.
+- G3 visualization job `1131103` completed in `6:17` solver time on 64 ranks and produced a verified `1.4 GB` Ensight dataset containing two states of geometry, wall fraction, porous mask, pressure, and velocity. Retain the source in Sol scratch, copy it to the Git-ignored local study directory for rendering, and label all images as startup flow at `t*=0.01` rather than converged validation.
+- A 2026-11-15 implementation adds a distinct one-cell porous mesh annulus around each bead stick and scales its volumetric drag from integrated linear/quadratic mesh pressure-loss coefficients. It also adds seven internal thermo-sealed divider walls and two edge closures to the channel walls. The G1 four-rank smoke test found all nine wall segments and distinct nonempty bead/mesh masks; representative reruns gave CFL about `0.0056`, divergence about `3.2e-13`, and mass-flow error about `5e-15`. Use physical mesh coefficients only after separate mesh calibration, and retain the solid-wall interpretation as provisional until seal airtightness is confirmed.
+- A multi-stage Docker review package now pins the NGA2 dependency and exposes the thesis case through `nga2Adsorption --config ... --output ... --ranks ...`. Its one smoke and three analytical cases automatically enforce finite diagnostics, CFL, divergence, mass balance, and Darcy/Forchheimer pressure-drop tolerances. The finalized `linux/arm64` image and macOS Apple Silicon wrapper passed locally on 2026-10-20. An Intel Windows wrapper targets `linux/amd64` through Docker Desktop's Linux-container mode; native x86-64 verification remains pending because local QEMU builds failed nondeterministically inside `gfortran`. This is pre-calibration packaging evidence only; every bundled geometry and porous coefficient remains provisional.
 
 ## Assumptions and decisions still needed
 
 - Flow is along `x`, so `nx = 256`, `ny = 64`, and `nz = 64`.
 - The new case will live in `Thesis/simulations/srp_channel`; the NGA2 source tree and stock channel baseline will not be modified.
-- The initial milestone is an empty channel. Porous resistance and rods will only be added after that case passes its checks.
+- The empty-channel milestone passed its checks before porous resistance and rods were added. Preserve that verified open case as the baseline for subsequent comparisons.
 - The NGA2 model is the thesis implementation of the CFD work described with Ansys Fluent in the proposal. Confirm with Marcus and Justin that NGA2 results will satisfy the project deliverable.
 - A bead rod is a porous region inside one mesh sheet; multiple sheets are stacked along the contactor flow path. Keep rod-scale arrangement and sheet-scale spacing/depth as separate geometry parameters.
+- The latest advisor discussion, reported on 2026-11-06, recommends at least 10 cells across each physical stick diameter. The provisional `0.1`-diameter stick has only about six cells on the `256 x 64 x 64` grid and about ten on the `384 x 96 x 96` grid. Treat the target grid's earlier numerical acceptance separately from this physical-geometry resolution requirement.
+- The current code assumes full circular, `z`-directed sticks with synthetic diameter and spacing. The physical pockets are now known to bulge in both directions like rods, but their filled cross-sectional dimensions are still missing; do not assign the synthetic diameter or spacing to the experiment until those measurements arrive.
+- Samantha's 2026-11-06 response confirms rod-like pockets that bulge in both directions, `2 mm` solid thermo-sealed separators, fill-dependent thickness, and wet-bead swelling. Thickness measurements for the existing `0.3 g` packet and a fully packed packet, empty-stick and filled-stick runs, and a humidity-capability check were planned. On 2026-11-09 Leonardo proposed paired empty/filled tests through the same defined aperture to isolate bead resistance. Seal airtightness, thickness values, and new numeric pressure-drop results remain pending; see `../SupportingDocuments/EXPERIMENT_TRACKER.md`.
+- Preserve the present through-sheet model as the test-stand/calibration configuration. A later rotated assembly with open channels above and below the sheets is a separate geometry and will require its own housing/gap dimensions and region-specific flow monitors.
 - Physical channel dimensions, fluid properties, inlet velocity/profile, and run duration must be taken from the experiment or agreed with the advisors before quantitative comparison.
 - Marcus must prioritize the first rod orientations.
-- Justin's through-sheet pressure-drop data is required to fit the final porous coefficients. An Ergun estimate may be used only as a clearly labeled provisional value.
+- Calibration-quality empty-mesh and bead-filled-sheet pressure-drop data, including geometry, baseline losses, velocity definition, and uncertainty, are required to fit the final porous coefficients. The MT 125-micron two-layer mesh/stand correlation may be used only as measured assembly evidence until its missing baseline and metadata are supplied; an Ergun estimate or the preliminary Excellion system correlation may be used only as a clearly labeled provisional value.
 
 ## Work plan
 
@@ -47,16 +84,16 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [ ] Define how turbine/whirlybird performance will be coupled later; do not assume inlet velocity and available pressure independently for a passive system.
 - [ ] Calculate the target Reynolds number and expected empty-channel pressure drop for a basic sanity check.
 
-**Verify:** All dimensional values, units, sources, and derived nondimensional values are written in the case README. No placeholder value is used without being labeled.
+**Verify:** All dimensional values, units, sources, and derived nondimensional values are written in the case documentation. No placeholder value is used without being labeled.
 
 ### 2. Create a separate 3D SRP case
 
-- [ ] Add the minimum implementation needed to the `Thesis/simulations/srp_channel` scaffold: input parameters and source files.
-- [ ] Create a Cartesian grid with `nx = 256`, `ny = 64`, and `nz = 64`.
-- [ ] Make `x` nonperiodic and retain solid walls on the channel cross-section.
-- [ ] Choose an MPI partition whose factors match the launched rank count and divide the mesh dimensions exactly.
-- [ ] Add a finite stopping condition and configurable output intervals.
-- [ ] Compile the new case without changing the stock channel case.
+- [x] Add the minimum implementation needed to the `Thesis/simulations/srp_channel` scaffold: input parameters and source files.
+- [x] Create a Cartesian grid with `nx = 256`, `ny = 64`, and `nz = 64`.
+- [x] Make `x` nonperiodic and retain solid walls on the channel cross-section.
+- [x] Choose an MPI partition whose factors match the launched rank count and divide the mesh dimensions exactly.
+- [x] Add a finite stopping condition and configurable output intervals.
+- [x] Compile the new case without changing the stock channel case.
 
 **Implementation reference:** Reuse the inflow/outflow pattern already demonstrated in `NGA2/examples/pipe/src/simulation.f90` or `NGA2/examples/cylinder/src/simulation.f90`: a Dirichlet inlet, clipped-Neumann outlet, and mass-flow correction. Remove the stock channel's periodic streamwise forcing.
 
@@ -64,23 +101,24 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 ### 3. Verify the empty-channel flow
 
-- [ ] Run a short low-resolution or short-duration test before the full `256 x 64 x 64` run.
-- [ ] Monitor CFL, maximum divergence, pressure-solver residual/iterations, and inlet/outlet mass flow.
-- [ ] Add outputs for area-averaged pressure at fixed upstream and downstream planes.
-- [ ] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
-- [ ] Compute mass-flow conservation error using Project Eqs. P4-P5.
-- [ ] Run until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the README.
-- [ ] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
+- [x] Run a short low-resolution or short-duration test before the full `256 x 64 x 64` run.
+- [x] Monitor CFL, maximum divergence, pressure-solver residual/iterations, and inlet/outlet mass flow.
+- [x] Add outputs for area-averaged pressure at fixed upstream and downstream planes.
+- [x] Compute pressure drop using Project Eq. P3 in `SRP_CO2_COLLECTOR_EQUATION_SHEET.md`.
+- [x] Compute mass-flow conservation error using Project Eqs. P4-P5.
+- [x] Inspect the target-mesh geometry and velocity, pressure, and wall-volume-fraction output in ParaView.
+- [x] Run the provisional target-mesh setup until pressure drop and mass flow are steady, using an explicit convergence rule recorded in the simulation guide.
+- [x] Save the input, launch command, code revision, runtime, velocity, pressure, and monitor data in a dated run directory.
 
 **Verify:** CFL remains below its configured limit, the solver residuals remain bounded, inlet and outlet mass flow agree within a documented tolerance, and the measured empty-channel pressure drop is physically plausible.
 
 ### 4. Add and verify porous resistance
 
-- [ ] Add a cell mask `chi_p` that is 1 inside a porous test region and 0 in open fluid.
-- [ ] Add the Darcy term first; add the Forchheimer/Ergun inertial term only after the linear term is verified.
-- [ ] Keep permeability and inertial resistance as named input parameters with units documented.
-- [ ] Run a simple uniform porous slab before creating rods.
-- [ ] Compare its simulated pressure gradient with the analytical Darcy or Darcy-Forchheimer prediction.
+- [x] Add a cell mask `chi_p` that is 1 inside a porous test region and 0 in open fluid.
+- [x] Add and verify the Darcy term first, then independently add and verify the Forchheimer inertial term.
+- [x] Keep permeability and inertial resistance as named input parameters with units documented.
+- [x] Run a simple uniform porous slab before creating rods.
+- [x] Compare its simulated pressure gradient with the analytical Darcy prediction.
 - [ ] Fit permeability `alpha` and inertial coefficient `C2` to bead-filled-sheet pressure-drop data using Project Eqs. P1-P2.
 - [ ] Separate empty-mesh/frame resistance from bead-bed resistance when the measurements permit it.
 - [ ] Validate the fitted coefficients at airflow rates not used for fitting; retain provisional Ergun and fitted values as separate runs.
@@ -89,12 +127,13 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 
 ### 5. Create the bead-rod and stacked-sheet geometry
 
-- [ ] Represent 4 or 5 rods across the 64-cell cross-section using the verified porous mask.
-- [ ] Check that rod diameter and spacing are resolved by enough cells; revise the mesh only if this check fails.
+- [x] Represent a provisional four-rod aligned reference across the 64-cell cross-section using the verified porous mask.
+- [x] Check the provisional rod resolution: each diameter spans six target-mesh cells in both diameter directions, and the four masks are separated and unclipped.
 - [ ] Implement only the arrangements selected for the first comparison: aligned, 90-degree rotation, offset, or angled.
-- [ ] Assemble the validated sheet representation into a configurable stack with explicit sheet spacing and contactor depth.
+- [x] Assemble the validated sheet representation into a configurable stack with explicit sheet count and spacing; derive contactor depth from the first-to-last sheet span plus rod diameter.
+- [x] Add per-sheet pressure drops, their sum, the sampled whole-stack drop, and a closure-error monitor.
 - [ ] Define packing density from measurable geometry or bead mass/volume rather than an unlabeled tuning factor.
-- [ ] Output the porous mask with the flow fields so each geometry can be inspected.
+- [x] Output the porous mask with the flow fields so each geometry can be inspected.
 
 **Verify:** Cell counts and rendered slices confirm the intended rod size, count, placement, and orientation with no accidental overlap or boundary clipping.
 
@@ -114,10 +153,11 @@ The hydrodynamic design target inherited from proposal Milestone M1.1 is a conta
 - [ ] Compare sheet spacing, packing density, contactor length/depth, and selected rod/flow-path arrangements.
 - [ ] Use the same domain, fluid properties, sampling planes, and convergence rule within each controlled comparison.
 - [ ] Record total pressure drop, inlet/outlet mass balance, and runtime for each case.
-- [ ] Save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
+- [x] Implement and numerically verify equal-width downstream flow-split fractions and the Project Eq. P7 coefficient of variation.
+- [ ] Apply the flow-split monitor to converged rod and stacked-sheet cases, and save center-plane velocity and pressure fields plus streamlines or equivalent views that expose bypassing and flow maldistribution.
 - [ ] Summarize the results in one table and identify configurations at or below the `10 Pa` hydrodynamic target.
-- [ ] Repeat representative empty and porous cases on systematically coarser and finer meshes. For pressure drop and flow split, calculate the grid-change metric `delta_grid = 100 |phi_fine - phi_coarse| / |phi_fine|` using Project Eq. P15.
-- [ ] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
+- [x] Repeat the representative porous active/control case on corrected coarse, target, and fine meshes. Project Eq. P15 target-to-fine changes pass the working `2%` pressure and `5%` P7 criteria; retain the target grid for provisional comparisons.
+- [x] Repeat one representative case at a smaller maximum time step to check time-step sensitivity separately from grid sensitivity.
 
 **Verify:** Every reported comparison uses converged cases with controlled settings, the configuration conclusions are not materially changed by the grid/time-step checks, and any case claimed to meet the design target has total contactor pressure drop `<= 10 Pa` at the stated airflow condition.
 
@@ -147,5 +187,7 @@ CO2 capture rate, water-vapor transport, working capacity, and contactor product
 
 ## Immediate next action
 
-Replace the placeholder `geometry.f90` and `simulation.f90` in `Thesis/simulations/srp_channel` with the minimum empty, nonperiodic 3D inflow/outflow channel, using the smallest suitable NGA2 example as a reference. Add a small debug mesh and finite end time before attempting the full `256 x 64 x 64` case. Do not begin the porous model until the empty case passes the checks in Step 3.
+Construct a single-layer eight-stick input and smoke-test its geometry and MPI decomposition on the four-grid, constant-`r = 2` sequence. Submit G1-G3 incrementally on Sol for standard GCI, recording active/control pairing, executable hash, task layout, queue wait, runtime, conservation diagnostics, and grid-convergence quantities. Submit G4 only if its smoke-test memory and timing are acceptable and the first three levels justify the added cost. Treat all results as provisional until experimental thickness and resistance inputs arrive.
+
+After the physical thickness and holder dimensions arrive, choose a mesh that provides at least 10 cells across the filled pocket thickness and run the supported through-sheet configuration. Keep the later rotated upper/lower-channel model separate, retain historical binary-mask results only as diagnostic history, and fit permeability and inertial resistance only when calibration-quality data arrive.
 

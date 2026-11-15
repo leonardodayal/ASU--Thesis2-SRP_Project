@@ -1,0 +1,40 @@
+# Parallelization
+Partition : 4 1 1
+
+# Target mesh resolution. ny and nz include two padded wall cells per side;
+# the open passage therefore contains 60 x 60 cross-section cells.
+nx : 256
+ny : 64
+nz : 64
+Wall padding cells : 2
+
+# Provisional nondimensional open-passage dimensions. Replace with confirmed
+# experimental dimensions before using the result quantitatively.
+Lx : 4
+Ly : 1
+Lz : 1
+
+# Provisional constant-density properties and uniform inlet condition.
+Density : 1
+Dynamic viscosity : 0.01
+Inlet velocity : 1
+
+# Darcy-only porous slab. Equal bounds disable the slab for this open case.
+# Permeability has units of length squared; slab bounds use the Lx units.
+Porous permeability : 1
+Forchheimer coefficient : 0
+Porous geometry : slab
+Porous slab start : 2
+Porous slab end : 2
+Pressure sample upstream : 1
+Pressure sample downstream : 3
+Flow split plane : 3
+Flow split bands : 4
+
+# One provisional flow-through time, Lx/Uin = 4.
+Max timestep size : 2e-3
+Max cfl number : 0.8
+Max time : 4
+
+# Field output
+Ensight output period : 1

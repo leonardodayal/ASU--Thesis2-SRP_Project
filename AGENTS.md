@@ -65,6 +65,17 @@ For multi-step tasks, state a brief plan:
 
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
+## 5. Keep Project Status and Handoffs Current
+
+**Do not let implementation and evidence outrun the project handoff.**
+
+- Update `HANDOFF.md` and `Thesis/leo_todo_list.md` whenever a verified milestone, blocker, external input, assumption, immediate next action, or important result changes.
+- During long or multi-step work, update those files after each significant verified checkpoint rather than waiting until the end of the task.
+- Immediately before every Git commit, review the staged or intended diff and confirm that the handoff and checklist accurately describe the repository state. Include any required status updates in the same commit.
+- Update `Thesis/Phase2plan.md` as well when Phase 2 completion criteria, work-plan status, assumptions, or execution order change.
+- Distinguish verified results from provisional values and pending work. Record the evidence date and source where it affects interpretation.
+- Do not make timestamp-only or wording-only status edits when nothing material changed.
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.

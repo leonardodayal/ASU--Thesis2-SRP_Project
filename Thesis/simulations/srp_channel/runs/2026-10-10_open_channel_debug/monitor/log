@@ -1,0 +1,91 @@
+10 Oct 2026 @ 19:21:35 => ******************** NGA APPLICATION STARTED ********************
+10 Oct 2026 @ 19:21:35 => NGA was called with 16 user-defined parameters:
+10 Oct 2026 @ 19:21:35 =>  __________________________________________________________________________________________________
+10 Oct 2026 @ 19:21:35 => | Parameter tag name             | Assigned value                 | Source                         |
+10 Oct 2026 @ 19:21:35 => | i                              | input                          | command line: short            |
+10 Oct 2026 @ 19:21:35 => | Partition                      | 4 1 1                          | file: input                    |
+10 Oct 2026 @ 19:21:35 => | nx                             | 32                             | file: input                    |
+10 Oct 2026 @ 19:21:35 => | ny                             | 12                             | file: input                    |
+10 Oct 2026 @ 19:21:35 => | nz                             | 12                             | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Wall padding cells             | 2                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Lx                             | 4                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Ly                             | 1                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Lz                             | 1                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Density                        | 1                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Dynamic viscosity              | 0.01                           | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Inlet velocity                 | 1                              | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Max timestep size              | 5e-3                           | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Max cfl number                 | 0.8                            | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Max time                       | 2e-2                           | file: input                    |
+10 Oct 2026 @ 19:21:35 => | Ensight output period          | 1e-2                           | file: input                    |
+10 Oct 2026 @ 19:21:35 => |________________________________|________________________________|________________________________|
+10 Oct 2026 @ 19:21:35 => Partitioned cartesian grid [srp_channel] on 4 processes
+10 Oct 2026 @ 19:21:35 =>  >   overlap = 2
+10 Oct 2026 @ 19:21:35 =>  >      size = 32x12x12
+10 Oct 2026 @ 19:21:35 =>  >    decomp = 4x1x1
+10 Oct 2026 @ 19:21:35 =>  >    extent = [ 0.00000E+00, 4.00000E+00]x[-7.50000E-01, 7.50000E-01]x[-7.50000E-01, 7.50000E-01]
+10 Oct 2026 @ 19:21:35 =>  >   uniform = TxTxT
+10 Oct 2026 @ 19:21:35 =>  >  periodic = FxTxT
+10 Oct 2026 @ 19:21:35 =>  >    volume =  9.00000E+00
+10 Oct 2026 @ 19:21:35 => Timetracker [UNNAMED_TIME] status
+10 Oct 2026 @ 19:21:35 =>  >  it/ itmax = 1/2
+10 Oct 2026 @ 19:21:35 =>  >   n/  nmax = 1/2147483647
+10 Oct 2026 @ 19:21:35 =>  >   t/  tmax =  5.00000E-03/ 2.00000E-02
+10 Oct 2026 @ 19:21:35 =>  >  dt/ dtmax =  5.00000E-03/ 5.00000E-03
+10 Oct 2026 @ 19:21:35 =>  > cfl/cflmax =  4.00000E-02/ 8.00000E-01
+10 Oct 2026 @ 19:21:35 =>  >  wt/ wtmax =  1.36170E-02/ 1.79769+308
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => Timetracker [UNNAMED_TIME] status
+10 Oct 2026 @ 19:21:35 =>  >  it/ itmax = 1/2
+10 Oct 2026 @ 19:21:35 =>  >   n/  nmax = 2/2147483647
+10 Oct 2026 @ 19:21:35 =>  >   t/  tmax =  1.00000E-02/ 2.00000E-02
+10 Oct 2026 @ 19:21:35 =>  >  dt/ dtmax =  5.00000E-03/ 5.00000E-03
+10 Oct 2026 @ 19:21:35 =>  > cfl/cflmax =  4.07155E-02/ 8.00000E-01
+10 Oct 2026 @ 19:21:35 =>  >  wt/ wtmax =  1.50500E-02/ 1.79769+308
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => Timetracker [UNNAMED_TIME] status
+10 Oct 2026 @ 19:21:35 =>  >  it/ itmax = 1/2
+10 Oct 2026 @ 19:21:35 =>  >   n/  nmax = 3/2147483647
+10 Oct 2026 @ 19:21:35 =>  >   t/  tmax =  1.50000E-02/ 2.00000E-02
+10 Oct 2026 @ 19:21:35 =>  >  dt/ dtmax =  5.00000E-03/ 5.00000E-03
+10 Oct 2026 @ 19:21:35 =>  > cfl/cflmax =  4.14718E-02/ 8.00000E-01
+10 Oct 2026 @ 19:21:35 =>  >  wt/ wtmax =  1.87550E-02/ 1.79769+308
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => Timetracker [UNNAMED_TIME] status
+10 Oct 2026 @ 19:21:35 =>  >  it/ itmax = 1/2
+10 Oct 2026 @ 19:21:35 =>  >   n/  nmax = 4/2147483647
+10 Oct 2026 @ 19:21:35 =>  >   t/  tmax =  2.00000E-02/ 2.00000E-02
+10 Oct 2026 @ 19:21:35 =>  >  dt/ dtmax =  5.00000E-03/ 5.00000E-03
+10 Oct 2026 @ 19:21:35 =>  > cfl/cflmax =  4.19867E-02/ 8.00000E-01
+10 Oct 2026 @ 19:21:35 =>  >  wt/ wtmax =  1.98230E-02/ 1.79769+308
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => ddadi solver [Velocity] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 => fft2d solver [Pressure] for config [srp_channel]
+10 Oct 2026 @ 19:21:35 =>  Timetracker [UNNAMED_TIME] reached maximum integration time
+10 Oct 2026 @ 19:21:35 => ******************** NGA APPLICATION COMPLETE *******************

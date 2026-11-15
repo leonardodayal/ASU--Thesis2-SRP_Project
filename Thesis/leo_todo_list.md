@@ -2,15 +2,58 @@
 
 Based on the meeting with Justin Flory and Marcus Herrmann.
 
-**Priority:** Get the pure-flow pressure drop simulation running first. It can run on the side while the adsorption model is worked out.
+**Priority:** Finish the remaining hydrodynamic diagnostics while physical geometry and calibration data are pending, then calibrate and validate the pressure-drop model before adding adsorption.
 
-## Progress snapshot (2026-10-10)
+## Progress snapshot (2026-11-11)
 
+- **Completed:** Repository documentation now has one root `README.md` for orientation and a root-level `SETUP.md` for native and Docker workflows. Specialized simulation, review, calibration, and run records retain their content under descriptive filenames.
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
 - **Completed:** The radial paper's introduction, literature overview, and governing adsorption equations have been reviewed and documented in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
-- **Partial:** A baseline channel run exists, but it is the stock 2D periodic, body-force-driven case (`128 x 40 x 1`), not the required 3D SRP inflow/outflow channel.
-- **Next milestone:** Create a separate 3D Cartesian SRP case with explicit inflow and outflow, first without porous rods.
-- **Current blockers:** Rod-orientation priorities and Justin's through-sheet pressure-drop data are still outstanding.
+- **Completed:** A separate thesis-owned 3D SRP case now builds and completes finite MPI smoke tests with explicit inflow/outflow on debug and target `256 x 64 x 64` meshes.
+- **Completed:** The target-mesh Ensight output has been opened and inspected successfully in ParaView, including the fluid passage, velocity, pressure, and wall-volume-fraction fields.
+- **Completed:** The provisional target-mesh setup ran for one flow-through time and met its documented numerical convergence rule; this is not yet a physical pressure-drop prediction.
+- **Completed:** A Darcy-only porous slab and exported mask reproduce the uniform analytical pressure drop exactly within printed precision.
+- **Completed:** The Forchheimer term independently reproduces its uniform analytical pressure drop exactly within printed precision.
+- **Completed:** A configurable provisional four-rod aligned mask passes target-mesh resolution, placement, wall-clipping, and solver smoke checks.
+- **Completed:** ParaView inspection shows four velocity-deficit bands aligned with the four porous rods and faster flow through the gaps, confirming qualitative porous/velocity coupling at `t = 0.02`. This short transient is not a converged or calibrated pressure-drop result.
+- **New measurement evidence:** Justin's 2026-10-19 email includes a preliminary pressure-drop plot for 20 Excellion sheets at 5 mm spacing and requests an empty-packet or single-mesh through-flow test by 2026-10-23. The plot is not sufficient to assign physical porous coefficients because key geometry, baseline, uncertainty, bead-loading, and velocity-definition metadata are absent.
+- **New measurement evidence:** Ramesh supplied 29 points for two MT 125-micron polyester-mesh layers on a custom 3D-printed stand. Over `0.1-2.9 m/s`, pressure drop is `1.6-75.6 Pa`; the table reproduces `Delta p = 13.3676 U + 4.42639 U^2` Pa with `RMSE = 0.313 Pa` and `R^2 = 0.999805`. The blank `3.0 m/s` row is not a measurement. This characterizes the tested mesh/stand assembly but does not isolate mesh or bead-bed resistance.
+- **Completed:** The 29 measurements and blank `3.0 m/s` source row are transcribed with provenance and measurement status in `SupportingDocuments/PhysicalMeasurments/mt_125_micron_two_layer_raw.csv`; the transcription and fitted coefficients were independently verified on 2026-10-20.
+- **New measurement evidence:** The email thread through 2026-11-05 reports a `10 cm x 10 cm` packet opening, eight horizontal pockets, nominal `1.25 cm` pocket width before seal subtraction, and approximately `0.3 g` of unexchanged Purolite A501P chloride-form resin per pocket. It describes a CMS25 nylon packet (`25 micrometre`, `12.02%` open) and a packed-bead run using a `40-micrometre` filter, likely as separate configurations. Blank-frame and packed-bead runs exist, but their spreadsheet and supporting jig/photo attachments are missing locally, so the measurement series cannot yet be mapped to their packet configurations and calibration remains blocked. The consolidated evidence and source inventory are in `SupportingDocuments/EVIDENCE_SUMMARY.md`.
+- **Completed:** A calibration-ready fitting tool now handles baseline subtraction, independent measurement/baseline uncertainties, calibration/validation splits, and Project Eqs. P1-P2 conversion. It recovers known synthetic `alpha` and `C2` values to floating-point precision, including a held-out validation point.
+- **Completed:** Nine multi-velocity NGA2 slab cases verify the linear Darcy term, quadratic Forchheimer term, and their sum at velocities `0.5`, `1`, and `2`; all final-window pressure drops match Project Eq. P1 within printed precision.
+- **Completed:** A configurable downstream flow-split monitor reports equal-width band mass-flow rates, fractions, and Project Eq. P7 maldistribution. Its four-band MPI test conserves the total flow at monitor precision, preserves symmetry, and historical inputs retain one-band defaults.
+- **Completed:** A matched converged open-channel baseline isolates the provisional rods' effect. The rods reduce four-band CV by `1.06811%` while increasing total pressure drop by `2.65518%`; these are synthetic numerical results, not physical design findings.
+- **Completed:** A configurable provisional stack repeats the verified aligned sheet by sheet count and center-to-center spacing. A three-sheet, four-rods-per-sheet target-mesh smoke test verifies separated masks, no wall clipping, conservative flow, and backward-compatible single-sheet behavior.
+- **Completed:** Per-sheet pressure monitors now report every sheet drop, their sum, whole-stack sampled drop, and closure error. The three-sheet smoke test closes exactly at monitor precision and regression tests cover non-rod and historical single-sheet inputs.
+- **Completed:** Flow split and Project Eq. P7 maldistribution are now reported after every sheet. The three-sheet smoke test conserves each plane's total flow, preserves symmetry, and passes open/single-sheet regressions.
+- **Completed:** The provisional three-sheet stack completed one flow-through time and passed the convergence rule. Mean sheet drops are `0.224764`, `0.215793`, and `0.209112`; downstream P7 CV values are `0.246710`, `0.260804`, and `0.271920`.
+- **Completed:** The matched zero-resistance three-sheet control completed one flow-through time and reproduced the open-channel total pressure drop. Control subtraction shows that the provisional resistance adds `0.142539` total pressure drop and reduces P7 CV by `3.20851%`, `4.42426%`, and `4.61025%` after sheets 1-3.
+- **Completed:** A matched `128 x 32 x 32` active/control pair gives Project Eq. P15 changes of at most `4.00174%` for corrected pressure quantities and `2.86352%` for corrected P7 CV changes versus the target pair. A finer-than-target pair is still needed for formal grid independence.
+- **Completed:** Halving the target-grid timestep to `0.001` changes total pressure drop by `0.289417%`, sheet drops by at most `0.179043%`, and per-sheet P7 CV by at most `0.207011%`; all pass the predeclared `1%` working criterion.
+- **Completed:** A short `384 x 96 x 96` feasibility test fits in memory, resolves each rod diameter with 10 streamwise cells, produces identical `25,920`-cell masks for all three sheets, and completes stably. A full matched pair is projected at `83–107 min` total.
+- **Completed:** The full matched `384 x 96 x 96` resistance-active/control pair completed one flow-through time and passes the convergence, CFL, mass-balance, divergence, and pressure-closure checks.
+- **Grid-sensitivity result:** Target-to-fine Project Eq. P15 changes are `4.49272%` for corrected total pressure, at most `4.75564%` for local sheet increments, and at most `10.7750%` for corrected P7 changes. Coarse and fine corrected pressure agree within `0.918400%`, making the three-grid pressure sequence non-monotonic. Formal grid independence is not established.
+- **Completed diagnosis:** The binary mask overrepresented each coarse/target rod area by `6.1033%`, versus `0.2087%` on the fine grid. Whole-cell flow bands also had unequal physical widths on the coarse and fine grids.
+- **Completed correction and smoke verification:** Rod-boundary cells now use fractional coverage, band flux uses physical overlap, and pressure/flow diagnostics interpolate to requested physical planes. Across three ten-step MPI cases, maximum rod-area error is `0.002874%`, cross-grid area spread is `0.00287824%`, all four bands are exactly `0.25` wide, and the numerical checks pass. Nine Darcy/Forchheimer slab regressions still match Project Eq. P1 exactly at recorded precision.
+- **Completed corrected three-grid sequence:** Full-duration coarse, target, and fine active/control pairs pass the numerical checks. Corrected total pressure is monotonic (`0.118040415170`, `0.122476005988`, `0.124160157685`). Target-to-fine Project Eq. P15 changes are `1.35643%` for total pressure, `1.21755-1.45490%` for sheet increments, and `2.04532-2.57712%` for corrected P7 changes, passing the working `2%` pressure and `5%` P7 gates. The coarse grid is pre-asymptotic; the target grid is accepted for provisional aligned-stack comparisons.
+- **Completed Sol scaling check:** On 2026-11-06, the corrected fine active case completed on ASU Sol in `55:43` with four ranks (job `614569`) and `42:20` with eight ranks (job `624047`). The eight-rank run is `1.316x` faster than the Sol four-rank run, with about `65.8%` efficiency for the rank doubling. Final monitors agree at printed precision and residual differences are at roundoff scale. The Sol scratch outputs are temporary and are not preserved in this repository.
+- **Completed:** A multi-stage pre-calibration Docker review package pins NGA2, provides the `nga2Adsorption` launcher, and automatically checks one smoke and three analytical MPI cases while labeling every geometry and porous coefficient provisional. The finalized `linux/arm64` image and macOS Apple Silicon wrapper passed locally on 2026-10-20. An Intel Windows PowerShell wrapper uses Docker Desktop's Linux-container mode; `linux/amd64` remains pending native x86-64 verification because local QEMU compiler emulation was unstable.
+- **Advisor debrief reported 2026-11-06:** Use at least 10 cells across each physical stick thickness. The provisional target grid resolves the current synthetic diameter with about six cells, while the fine grid resolves it with about ten; therefore, numerical acceptance of the target grid does not by itself satisfy the new physical-geometry resolution recommendation.
+- **Geometry response received:** Samantha confirms that the eight pockets are rod-like and bulge in both directions, with `2 mm` solid thermo-sealed separators. Thickness depends on fill and wet beads swell. Measurements for the existing `0.3 g` and fully packed cases, empty-stick and fully packed runs, and a humidity-capability check were planned. Exact thickness, seal airtightness, and quantitative swelling remain pending.
+- **Calibration experiment proposed:** On 2026-11-09 Leonardo proposed blocking all but a defined aperture and measuring it both empty and bead-filled so fixture losses can be subtracted. Track this paired test and all run metadata in `../SupportingDocuments/EXPERIMENT_TRACKER.md`.
+- **Advisor-directed grid study reported 2026-11-11:** Use `192 x 48 x 48`, `384 x 96 x 96`, `768 x 192 x 192`, and `1536 x 384 x 384` for a single layer containing the same eight sticks as the experiment, with up to 128 Sol cores. This gives constant refinement ratio `r = 2`; use the first three levels for standard GCI and run the 226,492,416-cell fourth level only if smoke-test memory and timing are acceptable.
+- **G1 128-rank Sol smoke passed:** After job `1105006` identified the FFT requirement for one undecomposed direction, corrected job `1120483` used `16 x 8 x 1` and completed ten steps in 13 solver seconds with exit code `0`. It produced exactly eight identical-area sticks (`0.00668939%` error), eight equal-width bands, no error markers, and final maximum divergence `2.10491e-14`. G2-G3 memory/timing smokes remain; the diameter stays provisional until the experimental filled thickness arrives.
+- **G2 resource smoke is next:** The earlier `384 x 96 x 96` three-sheet/four-stick case is not a valid G2 substitute. Run 100 steps with the new eight-stick single layer using `16 x 4 x 1`, 64 ranks, 128 GB, and a 15-minute limit. Use the result to choose 64 versus 128 ranks for full G2. The 128-rank G3 smoke is prepared but remains unsubmitted until G2 is reviewed.
+- **G2/G3 64-rank resource smokes passed:** G2 job `1122564` completed 100 steps in 53 solver seconds, projecting to about `17:40` for 2,000 steps. G3 job `1123065` completed 100 steps in `6:13`, projecting to about `2:04:20`; it passed with exit code `0`, no failure markers, `-0.000986796%` rod-area error, equal bands, CFL `0.500787`, final maximum divergence `1.71010e-11`, relative mass-flow error `1.44336e-14`, and maximum reported task RSS `759928K`. G4 needs a high-memory/longer-time sizing decision before submission.
+- **Run the provisional November 5 calibration sequence:** The recovered workbook's packed 40-micrometre-filter series supports a Darcy-only effective assembly fit, `alpha = 1.35916e-9 m^2` only under the provisional `10.5 mm` thickness assumption; the fitted inertial term is nonphysical and is set to zero. Submit and verify the prepared 64-rank G1 active 100-step case first, then create matched G1 control and G2/G3 active/control cases only after stability is demonstrated. The first 128-rank request, job `1126264`, was cancelled while still pending and used no allocation. Keep these results labeled provisional rather than bead-only calibration.
+- **G1 November 5 active/control smokes passed:** Active job `1126388` and control job `1126397` completed all 100 steps on 64 ranks in 11 and 10 solver seconds, respectively, with exit code `0`, stable `dt*=1e-4`, negligible mass-flow error, and no failure markers. Submit and verify the prepared G2/G3 matched pairs. Do not interpret the early-transient `4.12 Pa` active-minus-control pressure as converged validation.
+- **November 5 G1-G3 smoke sequence passed; choose convergence horizon next:** G2 jobs `1126507`/`1126508` used 33 solver seconds each; G3 jobs `1126509`/`1126510` used about `4:03` each. All matched active/control cases completed 100 stable steps with no failure markers. Their early-transient net pressure drops are about `4.12`, `2.94`, and `1.75 Pa` from G1 to G3, so do not calculate GCI from these values. First run a longer affordable-grid time-history study and define an objective steady/converged averaging window.
+- **Generate the new G3 ParaView dataset:** Commit and submit the prepared `768 x 192 x 192`, eight-stick, 100-step visualization case. Verify its Ensight files in Sol scratch, record size/runtime, and copy the output to the Mac without adding the generated multi-gigabyte field files to Git. Label any screenshots as startup-flow visualization, not converged validation.
+- **G3 ParaView dataset generated; copy/open locally:** Job `1131103` completed in `6:17` solver time and produced a verified `1.4 GB`, two-state Ensight dataset in `$SCRATCH/srp_benchmark/nov5_g3_visualization100_64/ensight`. Copy it into the Git-ignored study `paraview_data/` folder and open `srp_channel/nga.case`. Label screenshots as `768 x 192 x 192` startup flow at `t*=0.01`, not converged validation.
+- **Packet wall/mesh implementation smoke passed:** The model now has a separate one-cell porous mesh annulus with grid-scaled integrated resistance, seven internal divider walls, and two edge closures connecting the outer sticks to the channel walls. A 2026-11-15 four-rank G1 smoke test emitted distinct bead, mesh, and wall fields, found exactly nine wall segments, and passed the short stability and conservation checks with CFL about `0.0056`, divergence about `3.2e-13`, and mass-flow error about `5e-15`. Mesh coefficients are synthetic and solid seals remain provisional until separate mesh calibration and seal-airtightness confirmation arrive.
+- **Next milestone:** Freeze the grid sequence and physical/provisional geometry distinction, then smoke-test the eight-stick single-layer case and its MPI layout before launching the sweep. Record a matched control for every active grid. Preserve the later rotated assembly with upper and lower open channels as a separate configuration.
+- **Current blockers for physical predictions:** Filled pocket thickness, seal airtightness, complete holder/test-section dimensions and operating conditions, sheet alignment/spacing, paired baseline and bead-filled numeric data, run-to-mesh mapping, and uncertainty metadata are still outstanding.
 
 ## 1. Get set up
 
@@ -19,15 +62,24 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 ## 2. Build the first simulation (pressure drop)
 
-- [ ] Set up a 3D Cartesian mesh channel, about 64 x 64 x 256 cells, small enough to run on a laptop or desktop.
-  - **Partial:** The stock `128 x 40 x 1` channel case has been built and run; a separate 3D SRP case has not been created.
-- [ ] Run it first as a pure open channel with inflow and outflow.
-  - **Partial:** The stock periodic, body-force-driven channel ran successfully to simulation time `425.34` with maximum CFL about `0.764`. Explicit inflow/outflow boundaries remain to be implemented and verified.
-- [ ] Add a porous-medium region by modeling the bead rods as cells with lower permeability than the surrounding open space.
-- [ ] Use Darcy's law for the resistance, along with the correction one of the papers used for bead structures.
-- [ ] Place 4 or 5 rods across the 64-cell width.
+- [x] Set up a 3D Cartesian mesh channel, about 64 x 64 x 256 cells, small enough to run on a laptop or desktop.
+  - Implemented in `Thesis/simulations/srp_channel` with a `256 x 64 x 64` target mesh and a smaller debug input.
+- [x] Run it first as a pure open channel with inflow and outflow.
+  - Four-rank debug and target-mesh smoke tests completed normally on 2026-10-10. The target run ended at `t = 0.02` with final CFL `0.142256`, maximum divergence about `2.1e-13`, and relative inlet/outlet mass-flow error about `7e-15`.
+  - The target-mesh output was successfully visualized in ParaView on 2026-10-12.
+  - A one-flow-through-time target run met the provisional numerical convergence rule on 2026-10-16. The current values remain provisional and are not a validated pressure-drop result. See `Thesis/simulations/srp_channel/SIMULATION_GUIDE.md`.
+- [x] Add a verified porous-medium test region with lower permeability than the surrounding open space.
+  - Uniform-slab, single-sheet rod, and provisional stacked-sheet masks are implemented and verified. Their current dimensions and resistance values remain synthetic.
+- [x] Implement and independently verify the Darcy and Forchheimer resistance terms used by the radial paper. Physical coefficients still require Justin's data.
+- [x] Place a provisional four-rod aligned reference across the 64-cell width; replace its dimensions if advisor values differ.
+- [x] Assemble the aligned reference into a configurable provisional stack with explicit sheet count, spacing, stack center, and derived streamwise depth.
+- [x] Add per-sheet pressure sampling and verify that the sheet drops sum to the sampled whole-stack drop.
+  - In the three-sheet smoke test, final transient sheet drops `0.765813`, `0.765851`, and `0.765825` sum to the stack value `2.29749` with zero closure error at monitor precision.
 - [ ] Try several arrangements: same orientation, rotated 90 degrees, offset, or angled.
 - [ ] Get the flow path and overall pressure drop from each.
+- [x] Add and verify equal-width downstream flow-split and maldistribution monitoring; geometry-specific rod/sheet comparisons remain pending.
+  - Matched converged open and provisional aligned four-rod cases now isolate the rods' incremental pressure-drop and four-band flow-split effects.
+- [x] Extend flow-split and Project Eq. P7 maldistribution reporting to every sheet plane in a stack.
 
 ## 3. Literature review (with Marcus)
 
@@ -37,11 +89,13 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
   - Documented the paper's original Eqs. (1)-(27), explicit SRP/NGA2 adaptations, and project-added equations in [SRP_CO2_COLLECTOR_EQUATION_SHEET.md](./SRP_CO2_COLLECTOR_EQUATION_SHEET.md).
 - [ ] Check the papers it cites to see whether that model applies to these specific beads.
 
-## 4. Later, once the flow setup is running
+## 4. Coupled transport and experimental validation
 
-- [ ] Add the CO2, moisture, and temperature equations on top of the flow model as a source term.
-- [ ] Treat regeneration with humid air as the same submodel with the sign flipped, driven by the water concentration difference between the beads and outside.
-- [ ] Compare against Justin's experimental pressure drop, then explore packing density, spacing, and thickness.
+- [ ] Calibrate Darcy-Forchheimer coefficients against baseline-corrected empty-mesh and bead-filled-sheet measurements, then validate against held-out airflow rates.
+- [ ] Add CO2 scalar transport after the hydrodynamic model is physically calibrated and validated.
+- [ ] Add bead loading, equilibrium, and adsorption/desorption kinetics using SRP material data; do not model regeneration by manually reversing a source sign.
+- [ ] Add moisture and temperature only after the core CO2-flow coupling is verified.
+- [ ] Compare experimentally supported packing density, spacing, thickness, and advisor-selected arrangements.
 
 ## Things to confirm
 
@@ -49,6 +103,6 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 ## Waiting on others
 
-- **Justin:** pressure-drop data for flow *through* the sheet (empty sheets and sheets with beads), needed soon for Darcy's law. Other configurations (along the sheet) come later.
+- **Samantha/Justin/experimental team:** planned `0.3 g` and fully packed thicknesses; seal airtightness; paired defined-aperture empty/filled measurements; empty-stick and fully packed runs; maximum controllable humidity; the missing spreadsheet and holder drawing; test-section and pressure-tap geometry; air properties; uncertainty/repeats; and velocity definition. Configurations with flow along normally mounted packets come later.
 - **Justin (possible):** small wind-tunnel experiment on the box of beads for system-level validation.
 - **Sherry:** follow-up note to be sent.
