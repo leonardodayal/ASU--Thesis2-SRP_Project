@@ -4,7 +4,7 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 
 **Priority:** Finish the remaining hydrodynamic diagnostics while physical geometry and calibration data are pending, then calibrate and validate the pressure-drop model before adding adsorption.
 
-## Progress snapshot (2026-11-11)
+## Progress snapshot (2026-11-17)
 
 - **Completed:** Repository documentation now has one root `README.md` for orientation and a root-level `SETUP.md` for native and Docker workflows. Specialized simulation, review, calibration, and run records retain their content under descriptive filenames.
 - **Completed:** NGA2 has been built and successfully run with MPI using the stock channel example.
@@ -52,7 +52,8 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - **Generate the new G3 ParaView dataset:** Commit and submit the prepared `768 x 192 x 192`, eight-stick, 100-step visualization case. Verify its Ensight files in Sol scratch, record size/runtime, and copy the output to the Mac without adding the generated multi-gigabyte field files to Git. Label any screenshots as startup-flow visualization, not converged validation.
 - **G3 ParaView dataset generated; copy/open locally:** Job `1131103` completed in `6:17` solver time and produced a verified `1.4 GB`, two-state Ensight dataset in `$SCRATCH/srp_benchmark/nov5_g3_visualization100_64/ensight`. Copy it into the Git-ignored study `paraview_data/` folder and open `srp_channel/nga.case`. Label screenshots as `768 x 192 x 192` startup flow at `t*=0.01`, not converged validation.
 - **Packet wall/mesh implementation smoke passed:** The model now has a separate one-cell porous mesh annulus with grid-scaled integrated resistance, seven internal divider walls, and two edge closures connecting the outer sticks to the channel walls. A 2026-11-15 four-rank G1 smoke test emitted distinct bead, mesh, and wall fields, found exactly nine wall segments, and passed the short stability and conservation checks with CFL about `0.0056`, divergence about `3.2e-13`, and mass-flow error about `5e-15`. Mesh coefficients are synthetic and solid seals remain provisional until separate mesh calibration and seal-airtightness confirmation arrive.
-- **Next milestone:** Freeze the grid sequence and physical/provisional geometry distinction, then smoke-test the eight-stick single-layer case and its MPI layout before launching the sweep. Record a matched control for every active grid. Preserve the later rotated assembly with upper and lower open channels as a separate configuration.
+- **November 16 advisor requirements recorded:** [`../SupportingDocuments/Nov16Meeting.md`](../SupportingDocuments/Nov16Meeting.md) preserves the handwritten notes and Leonardo's 2026-11-17 clarifications. Immediate hydrodynamic implications are fractional source weighting for stick-boundary cells, oval stick geometry, resolved separator walls, and area-averaged pressure at the experiment's still-unknown tap locations. Later coupled work uses constant inlet CO2/water concentrations and conservative competitive adsorption; the earlier adsorption model must be identified before implementation.
+- **Next milestone:** Use a longer matched active/control G1 or G2 time history to define and satisfy an objective steady/converged averaging window. Then run production-length G1-G3 pairs at the same physical end time before calculating GCI. Preserve the later rotated assembly with upper and lower open channels as a separate configuration.
 - **Current blockers for physical predictions:** Filled pocket thickness, seal airtightness, complete holder/test-section dimensions and operating conditions, sheet alignment/spacing, paired baseline and bead-filled numeric data, run-to-mesh mapping, and uncertainty metadata are still outstanding.
 
 ## 1. Get set up
@@ -96,10 +97,12 @@ Based on the meeting with Justin Flory and Marcus Herrmann.
 - [ ] Add bead loading, equilibrium, and adsorption/desorption kinetics using SRP material data; do not model regeneration by manually reversing a source sign.
 - [ ] Add moisture and temperature only after the core CO2-flow coupling is verified.
 - [ ] Compare experimentally supported packing density, spacing, thickness, and advisor-selected arrangements.
+- [ ] Identify the adsorption model discussed in earlier meetings and document its competitive CO2/water equilibrium, kinetics, temperature dependence, state variables, units, and required material parameters before implementing coupled transport.
 
 ## Things to confirm
 
 - [ ] Ask Marcus which rod orientations he wants first (he only suggested options).
+- [ ] Confirm the intended meaning of the `0.5` isosurface and whether `256` refers to subcell geometry samples per CFD cell.
 
 ## Waiting on others
 

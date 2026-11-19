@@ -1,6 +1,6 @@
 # Project Handoff
 
-Last updated: 2026-11-15
+Last updated: 2026-11-19
 
 ## Objective
 
@@ -12,6 +12,7 @@ Develop and validate an NGA2 CFD model of SRP's porous bead-rod CO2 collector. T
 - Equation provenance and adaptations: [`Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md`](./Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md)
 - Research-component assessment: [`OtherResearch/USABLE_RESEARCH_COMPONENTS.md`](./OtherResearch/USABLE_RESEARCH_COMPONENTS.md)
 - Primary methodological paper: [`OtherResearch/Adsorption performance of radial-flow contactors for direct air capture: A computational study.pdf`](./OtherResearch/Adsorption%20performance%20of%20radial-flow%20contactors%20for%20direct%20air%20capture%3A%20A%20computational%20study.pdf)
+- November 16 advisor notes and clarified requirements: [`SupportingDocuments/Nov16Meeting.md`](./SupportingDocuments/Nov16Meeting.md)
 
 Read the checklist before treating this handoff as current. Update both files when a milestone is verified.
 
@@ -50,6 +51,7 @@ Read the checklist before treating this handoff as current. Update both files wh
 - Sol job `1131103` completed the G3 visualization rerun in `6:17` solver time (`6:22` batch) on 64 ranks, with exit code `0`, no failure markers, maximum task RSS `791272K`, and the same final monitors as active G3 job `1126509`. It produced a verified `1.4 GB` Ensight dataset with two states (`.000001` and `.000002`) containing geometry, wall volume fraction, porous mask, pressure, and velocity. The source remains in `$SCRATCH/srp_benchmark/nov5_g3_visualization100_64/ensight`; copy it to the Git-ignored study `paraview_data/` directory for local ParaView use. This is a startup-flow visualization at `t*=0.01`, not a converged result.
 - The packet geometry now supports a distinct one-cell-thick porous retaining-mesh annulus around every bead stick. Mesh resistance is entered as integrated linear and quadratic pressure-loss coefficients and divided by the represented layer thickness, so the same integrated loss can be retained across grid refinement. The mesh has its own exported `mesh_mask`; existing inputs remain unchanged unless the new parameters are supplied. A post-fix G1 audit confirmed `4,200` mesh-positive cells outside the bead mask, verifying that annulus-only cells are retained.
 - The eight-stick sheet now optionally includes seven internal thermo-sealed divider walls plus upper and lower closures connecting the outer sticks to the channel walls. Because the reported `2 mm` seals are thinner than a G1 cell, the immersed-boundary representation enforces a one-cell minimum wall thickness and reverts to the requested physical thickness when resolved. A 2026-11-15 four-rank G1 smoke test found exactly nine wall segments and distinct nonempty bead and mesh masks; representative reruns gave final CFL about `0.0056`, maximum divergence about `3.2e-13`, and relative mass-flow error about `5e-15`. The wall geometry and synthetic mesh resistance remain provisional pending seal-airtightness confirmation and separate mesh calibration.
+- The 2026-11-16 advisor notes, clarified by Leonardo on 2026-11-17, specify fractional Darcy/Forchheimer weighting in stick-boundary cells, physical oval rather than ideal circular sticks, resolved walls between sticks, and area-averaged upstream/downstream pressure at experimental tap locations. The current case already provides fractional circular coverage and per-time-step area-averaged pressure monitors; oval subcell geometry and physical tap locations remain pending. The same notes define later constant-inlet CO2/water transport with conservative gas-to-stick adsorption, competitive moisture/temperature effects through a previously discussed model, and no assumed adsorption-heat coupling until confirmed. See `SupportingDocuments/Nov16Meeting.md`.
 - A dependency-free calibration tool in `Thesis/simulations/srp_channel/tools` now reads a documented pressure-drop CSV, subtracts the matching baseline, combines measurement and baseline uncertainties, preserves calibration/validation splits, and fits Project Eqs. P1-P2. Its synthetic test recovers `alpha = 0.02 m^2` and `C2 = 1.6 1/m` to floating-point precision, including a held-out validation point.
 - Nine uniform-slab NGA2 cases now verify Darcy-only, Forchheimer-only, and combined pressure-drop scaling at velocities `0.5`, `1`, and `2`. Every final-window mean matches Project Eq. P1 within printed precision; maximum relative mass-flow error is `9.99201e-16`, maximum CFL is `0.08`, and maximum divergence is `2.68307e-13`.
 - A configurable downstream flow-split monitor now reports equal-width band mass-flow rates, fractions, their sums, and the Project Eq. P7 coefficient of variation. Its four-band MPI test conserves total flow at monitor precision and preserves symmetry; a historical input verifies the backward-compatible one-band defaults.
@@ -84,7 +86,7 @@ It is **not** the required 3D SRP channel with explicit inflow and outflow. The 
 
 ## Immediate next task
 
-Validate an eight-stick, single-layer smoke case on the advisor-directed four-grid, constant-`r = 2` sequence before submitting the resolution sweep on Sol. Use no more than the approved 128 cores, but benchmark the decomposition rather than assuming 128 ranks is optimal. Complete G1-G3 for standard GCI first and treat the 226,492,416-cell G4 as conditional on measured memory and timing. The sweep remains a numerical study until filled thickness, seal airtightness, holder dimensions, and calibrated porous coefficients arrive.
+Establish an objective steady/converged averaging window with a longer matched active/control time-history study on the affordable G1 or G2 eight-stick grid. The completed 100-step G1-G3 jobs stop at `t*=0.01`, and their active-minus-control pressure drops vary strongly with grid resolution because all three remain in startup transient. Do not calculate GCI from those values. After the time horizon and averaging rule pass, run production-length G1-G3 pairs with the same physical end time and convergence rule. Treat the 226,492,416-cell G4 as conditional on measured memory, timing, and the value added beyond the first three grids. The sweep remains a numerical study until filled thickness, seal airtightness, holder dimensions, and calibrated porous coefficients arrive.
 
 ### Success criteria
 
