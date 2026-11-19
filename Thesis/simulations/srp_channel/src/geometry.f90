@@ -23,7 +23,7 @@ contains
       type(sgrid) :: grid
       integer :: i,j,k,l,m,nx,ny,nz,npad,n_rods,n_sheets
       real(WP) :: Lx,Ly,Lz,dy,dz,Ly_grid,Lz_grid
-      real(WP) :: rod_diameter,rod_span,sheet_x,stack_center_x,sheet_spacing
+      real(WP) :: rod_diameter,rod_thickness,rod_span,sheet_x,stack_center_x,sheet_spacing
       real(WP) :: separator_thickness,separator_depth,separator_y,divider_gib
       real(WP) :: divider_ylo,divider_yhi,divider_height
       character(len=32) :: porous_geometry
@@ -102,8 +102,9 @@ contains
             &  error stop 'Separator walls require an aligned-rod geometry'
             call param_read('Rod count',n_rods)
             call param_read('Rod diameter',rod_diameter)
+            call param_read('Rod thickness',rod_thickness,default=rod_diameter)
             call param_read('Rod center span',rod_span)
-            separator_depth=rod_diameter
+            separator_depth=rod_thickness
             if (param_exists('Separator wall depth')) &
             &  call param_read('Separator wall depth',separator_depth)
             if (n_rods.lt.2) error stop 'Separator walls require at least two rods'

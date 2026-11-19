@@ -31,7 +31,6 @@ module simulation
    real(WP), dimension(:,:,:), allocatable :: chi_p,chi_mesh,speed_mag
    real(WP) :: darcy_coeff,forchheimer_coeff,mesh_darcy_coeff
    real(WP) :: mesh_forchheimer_coeff,x_pressure_up,x_pressure_down
-   integer, parameter :: rod_fraction_subcells=64
    integer :: n_flow_bands
    real(WP) :: x_flow_split,y_flow_min,y_flow_max
    real(WP), dimension(:), allocatable :: y_band_edge
@@ -53,8 +52,10 @@ module simulation
 
 contains
 
-   pure function circle_cell_fraction(xlo,xhi,ylo,yhi,xc,yc,radius) result(fraction)
-      real(WP), intent(in) :: xlo,xhi,ylo,yhi,xc,yc,radius
+   pure function ellipse_cell_fraction(xlo,xhi,ylo,yhi,xc,yc,xradius,yradius,&
+   &                                   samples_per_direction) result(fraction)
+      real(WP), intent(in) :: xlo,xhi,ylo,yhi,xc,yc,xradius,yradius
+      integer, intent(in) :: samples_per_direction
       real(WP) :: fraction,dx_near,dy_near,dx_far,dy_far,xq,yq
       integer :: ii,jj,n_inside
 
@@ -63,24 +64,25 @@ contains
       dx_far=max(abs(xlo-xc),abs(xhi-xc))
       dy_far=max(abs(ylo-yc),abs(yhi-yc))
       ! Classify cells that are entirely inside or outside analytically.  Only
-      ! cells cut by the circle use deterministic subcell sampling.  Returning
+      ! cells cut by the ellipse use deterministic subcell sampling.  Returning
       ! a fractional mask avoids changing represented rod area with grid size.
-      if (dx_far**2+dy_far**2.le.radius**2) then
+      if ((dx_far/xradius)**2+(dy_far/yradius)**2.le.1.0_WP) then
          fraction=1.0_WP
-      else if (dx_near**2+dy_near**2.ge.radius**2) then
+      else if ((dx_near/xradius)**2+(dy_near/yradius)**2.ge.1.0_WP) then
          fraction=0.0_WP
       else
          n_inside=0
-         do jj=1,rod_fraction_subcells
-            yq=ylo+(real(jj,WP)-0.5_WP)*(yhi-ylo)/real(rod_fraction_subcells,WP)
-            do ii=1,rod_fraction_subcells
-               xq=xlo+(real(ii,WP)-0.5_WP)*(xhi-xlo)/real(rod_fraction_subcells,WP)
-               if ((xq-xc)**2+(yq-yc)**2.le.radius**2) n_inside=n_inside+1
+         do jj=1,samples_per_direction
+            yq=ylo+(real(jj,WP)-0.5_WP)*(yhi-ylo)/real(samples_per_direction,WP)
+            do ii=1,samples_per_direction
+               xq=xlo+(real(ii,WP)-0.5_WP)*(xhi-xlo)/real(samples_per_direction,WP)
+               if (((xq-xc)/xradius)**2+((yq-yc)/yradius)**2.le.1.0_WP) &
+               &  n_inside=n_inside+1
             end do
          end do
-         fraction=real(n_inside,WP)/real(rod_fraction_subcells**2,WP)
+         fraction=real(n_inside,WP)/real(samples_per_direction**2,WP)
       end if
-   end function circle_cell_fraction
+   end function ellipse_cell_fraction
 
    function left_of_domain(pg,i,j,k) result(isIn)
       use pgrid_class, only: pgrid
@@ -339,8 +341,9 @@ contains
          use parallel,     only: MPI_REAL_WP
          type(bcond), pointer :: inflow
          integer :: i,j,k,l,m,n,n_rods,n_sheets,ierr,iunit
+         integer :: rod_fraction_samples
          real(WP) :: visc,Uin,alpha,x_start,x_end
-         real(WP) :: rod_diameter,rod_span,rod_y,sheet_x,cell_fraction
+         real(WP) :: rod_diameter,rod_thickness,rod_span,rod_y,sheet_x,cell_fraction
          real(WP) :: inner_fraction,outer_fraction,mesh_thickness
          real(WP) :: mesh_linear_resistance,mesh_quadratic_resistance
          integer :: mesh_layer_cells
@@ -412,6 +415,8 @@ contains
          case ('aligned_rods_z','stacked_aligned_rods_z')
             call param_read('Rod count',n_rods)
             call param_read('Rod diameter',rod_diameter)
+            call param_read('Rod thickness',rod_thickness,default=rod_diameter)
+            call param_read('Rod fraction samples per direction',rod_fraction_samples,default=64)
             call param_read('Rod center span',rod_span)
             if (trim(porous_geometry).eq.'aligned_rods_z') then
                call param_read('Rod sheet x',stack_center_x)
@@ -425,6 +430,9 @@ contains
             if (n_rods.lt.1) error stop 'Rod count must be positive'
             if (n_sheets.lt.1) error stop 'Sheet count must be positive'
             if (rod_diameter.le.0.0_WP) error stop 'Rod diameter must be positive'
+            if (rod_thickness.le.0.0_WP) error stop 'Rod thickness must be positive'
+            if (rod_fraction_samples.lt.1) &
+            &  error stop 'Rod fraction samples per direction must be positive'
             if (rod_span.lt.0.0_WP) error stop 'Rod center span must be nonnegative'
             if (sheet_spacing.lt.0.0_WP) error stop 'Sheet spacing must be nonnegative'
             mesh_thickness=real(mesh_layer_cells,WP)*minval(cfg%dx(cfg%imin_:cfg%imax_))
@@ -440,7 +448,7 @@ contains
             if (n_sheets.gt.1) then
                default_sheet_pressure_offset=0.5_WP*sheet_spacing
             else
-               default_sheet_pressure_offset=rod_diameter
+               default_sheet_pressure_offset=rod_thickness
             end if
             call param_read('Sheet pressure offset',sheet_pressure_offset,&
             &               default=default_sheet_pressure_offset)
@@ -455,9 +463,10 @@ contains
             allocate(my_rod_area(n_rods,n_sheets),rod_area(n_rods,n_sheets))
             allocate(my_partial_cells(n_rods,n_sheets),partial_cells(n_rods,n_sheets))
             my_rod_area=0.0_WP; my_partial_cells=0
-            ! Each current rod is a z-directed porous cylinder.  Its circular
-            ! x-y cross-section is repeated at the requested sheet x locations;
-            ! with x-directed inlet flow this is the normal-flow configuration.
+            ! Each rod is z-directed.  Its x-y cross-section is an ellipse with
+            ! streamwise thickness along x and the historical diameter along y.
+            ! Omitting Rod thickness makes the two axes equal and exactly
+            ! preserves the historical circular input behavior.
             do m=1,n_sheets
                if (n_sheets.eq.1) then
                   sheet_x=stack_center_x
@@ -475,13 +484,15 @@ contains
                   end if
                   do j=cfg%jmino_,cfg%jmaxo_
                      do i=cfg%imino_,cfg%imaxo_
-                        cell_fraction=circle_cell_fraction(cfg%x(i),cfg%x(i+1),&
-                        &  cfg%y(j),cfg%y(j+1),sheet_x,rod_y,0.5_WP*rod_diameter)
+                        cell_fraction=ellipse_cell_fraction(cfg%x(i),cfg%x(i+1),&
+                        &  cfg%y(j),cfg%y(j+1),sheet_x,rod_y,0.5_WP*rod_thickness,&
+                        &  0.5_WP*rod_diameter,rod_fraction_samples)
                         inner_fraction=cell_fraction
                         outer_fraction=inner_fraction
-                        if (mesh_layer_cells.gt.0) outer_fraction=circle_cell_fraction(&
+                        if (mesh_layer_cells.gt.0) outer_fraction=ellipse_cell_fraction(&
                         &  cfg%x(i),cfg%x(i+1),cfg%y(j),cfg%y(j+1),sheet_x,rod_y,&
-                        &  0.5_WP*rod_diameter+mesh_thickness)
+                        &  0.5_WP*rod_thickness+mesh_thickness,&
+                        &  0.5_WP*rod_diameter+mesh_thickness,rod_fraction_samples)
                         if (i.ge.cfg%imin_.and.i.le.cfg%imax_.and.&
                         &   j.ge.cfg%jmin_.and.j.le.cfg%jmax_.and.cfg%kproc.eq.1) then
                            my_rod_area(l,m)=my_rod_area(l,m)+cell_fraction*&
@@ -506,7 +517,8 @@ contains
             &  MPI_REAL_WP,MPI_SUM,cfg%comm,ierr)
             call MPI_ALLREDUCE(my_partial_cells,partial_cells,n_rods*n_sheets,&
             &  MPI_INTEGER,MPI_SUM,cfg%comm,ierr)
-            nominal_rod_area=acos(-1.0_WP)*(0.5_WP*rod_diameter)**2
+            nominal_rod_area=acos(-1.0_WP)*(0.5_WP*rod_thickness)*&
+            &                              (0.5_WP*rod_diameter)
             max_area_error=maxval(abs(100.0_WP*(rod_area/nominal_rod_area-1.0_WP)))
             write(message,'("Porous mask audit: maximum rod-area error = ",es12.5," percent")') &
             &  max_area_error
