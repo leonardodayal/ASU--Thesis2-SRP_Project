@@ -194,3 +194,30 @@ passes every predeclared criterion. The net drop corresponds to about
 `10.7643 Pa` under the provisional `rho_ref U_ref^2=0.04816 Pa` scaling, but it
 is not experimental validation because thickness and resistance inputs remain
 provisional.
+
+Plot the active, control, and net convergence histories with the ParaView
+Python environment, which supplies Matplotlib on the verified macOS setup:
+
+```bash
+/Applications/ParaView-6.1.1.app/Contents/bin/pvpython \
+  plot_ellipse_horizon.py path/to/active path/to/control pressure-history.png
+```
+
+`input.g1.ellipse_horizon.visualization` repeats the converged active case and
+writes only the initial and final Ensight states for spatial inspection. It is
+a visualization rerun, not an additional independent G1 result.
+
+## Production ellipse GCI inputs
+
+The completed horizon pair supplies the G1 active/control result. The tracked
+G2 production inputs use 64 ranks and a six-hour `public` request. The G3
+production inputs use the valid `16 x 8 x 1` decomposition on 128 ranks and a
+provisional 36-hour `public` request. Every production case ends at `t*=4` and
+is evaluated over `t*=3-4`; field output is disabled.
+
+Before submitting either G3 production case, run
+`input.g3.ellipse_timing100.active` with `ellipse_timing_g3_128.sbatch`. Use its
+measured seconds per step and memory to replace the provisional G3 wall-time
+request if necessary. The timing gate must complete 100 steps with the expected
+eight-stick geometry and no failure markers. Do not infer 128-rank scaling from
+the old circular run.
