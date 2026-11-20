@@ -17,20 +17,70 @@ def numeric_rows(path):
 
 
 def mean_sheet_drop(case_dir, window_start, final_time):
+    if not math.isfinite(window_start) or not math.isfinite(final_time):
+        raise ValueError("Averaging-window bounds must be finite")
+    if final_time <= window_start:
+        raise ValueError("Averaging-window final time must be greater than window start")
     rows = numeric_rows(case_dir / "monitor" / "sheet_pressure")
-    window = [row[4] for row in rows if window_start <= row[1] <= final_time]
+    window = [
+        row[4]
+        for row in rows
+        if len(row) >= 5 and window_start <= row[1] <= final_time
+    ]
     if len(window) < 2:
         raise ValueError(f"Too few averaging-window samples in {case_dir}")
     return sum(window) / len(window)
 
 
 def net_drop(active, control, window_start, final_time):
-    return mean_sheet_drop(active, window_start, final_time) - mean_sheet_drop(
-        control, window_start, final_time
-    )
+    if not math.isfinite(window_start) or not math.isfinite(final_time):
+        raise ValueError("Averaging-window bounds must be finite")
+    if final_time <= window_start:
+        raise ValueError("Averaging-window final time must be greater than window start")
+
+    def pressure_by_step(case_dir):
+        rows = numeric_rows(case_dir / "monitor" / "sheet_pressure")
+        pressure = {}
+        for row in rows:
+            if len(row) < 5 or not window_start <= row[1] <= final_time:
+                continue
+            step = int(row[0])
+            if step in pressure:
+                raise ValueError(
+                    f"Duplicate timestep {step} in {case_dir / 'monitor' / 'sheet_pressure'}"
+                )
+            pressure[step] = (row[1], row[4])
+        return pressure
+
+    active_pressure = pressure_by_step(active)
+    control_pressure = pressure_by_step(control)
+    common_steps = sorted(active_pressure.keys() & control_pressure.keys())
+    if len(common_steps) < 2:
+        raise ValueError(
+            f"Too few aligned averaging-window samples in {active} and {control}"
+        )
+    net = []
+    for step in common_steps:
+        active_time, active_value = active_pressure[step]
+        control_time, control_value = control_pressure[step]
+        if not math.isclose(active_time, control_time, rel_tol=0.0, abs_tol=1.0e-10):
+            raise ValueError(
+                f"Timestep {step} has mismatched physical times "
+                f"{active_time:g} and {control_time:g}"
+            )
+        net.append(active_value - control_value)
+    return sum(net) / len(net)
 
 
 def calculate_gci(coarse, medium, fine, refinement_ratio=2.0, safety_factor=1.25):
+    if not all(math.isfinite(value) for value in (coarse, medium, fine)):
+        raise ValueError("Grid values must be finite")
+    if any(value == 0.0 for value in (coarse, medium, fine)):
+        raise ValueError("Grid values must be nonzero")
+    if not math.isfinite(refinement_ratio) or refinement_ratio <= 1.0:
+        raise ValueError("Refinement ratio must be finite and greater than 1")
+    if not math.isfinite(safety_factor) or safety_factor <= 0.0:
+        raise ValueError("GCI safety factor must be finite and positive")
     medium_fine = medium - fine
     coarse_medium = coarse - medium
     if medium_fine == 0.0 or coarse_medium == 0.0:
@@ -41,6 +91,10 @@ def calculate_gci(coarse, medium, fine, refinement_ratio=2.0, safety_factor=1.25
     if not math.isfinite(order) or order <= 0.0:
         raise ValueError(f"Non-positive observed order p={order:g}")
     denominator = refinement_ratio**order - 1.0
+    if not math.isfinite(denominator) or math.isclose(
+        denominator, 0.0, abs_tol=1.0e-12
+    ):
+        raise ValueError("GCI denominator is too close to zero")
     extrapolated = fine + (fine - medium) / denominator
     fine_gci = (
         safety_factor * abs((fine - medium) / fine) / denominator * 100.0

@@ -156,30 +156,38 @@ def main():
     ColorBy(wall_display, None)
     save_xy(geometry_view, args.output / "03_mesh_and_walls.png")
 
-    pressure_slice = Slice(Input=reader)
-    pressure_slice.SliceType = "Plane"
-    pressure_slice.SliceType.Origin = [2.0, 0.0, 0.0]
-    pressure_slice.SliceType.Normal = [0.0, 0.0, 1.0]
-    pressure_view = new_view()
-    pressure_display = Show(pressure_slice, pressure_view)
-    pressure_display.Representation = "Surface"
-    ColorBy(pressure_display, ("CELLS", "pressure"))
-    pressure_display.RescaleTransferFunctionToDataRange(True, False)
-    pressure_display.SetScalarBarVisibility(pressure_view, True)
-    save_xy(pressure_view, args.output / "04_final_pressure.png")
-    Hide(pressure_slice, pressure_view)
+    pressure = cell_values(fetched, "pressure")
+    if pressure:
+        pressure_slice = Slice(Input=reader)
+        pressure_slice.SliceType = "Plane"
+        pressure_slice.SliceType.Origin = [2.0, 0.0, 0.0]
+        pressure_slice.SliceType.Normal = [0.0, 0.0, 1.0]
+        pressure_view = new_view()
+        pressure_display = Show(pressure_slice, pressure_view)
+        pressure_display.Representation = "Surface"
+        ColorBy(pressure_display, ("CELLS", "pressure"))
+        pressure_display.RescaleTransferFunctionToDataRange(True, False)
+        pressure_display.SetScalarBarVisibility(pressure_view, True)
+        save_xy(pressure_view, args.output / "04_final_pressure.png")
+        Hide(pressure_slice, pressure_view)
+    else:
+        print("pressure cell array unavailable; skipped 04_final_pressure.png")
 
-    velocity_slice = Slice(Input=reader)
-    velocity_slice.SliceType = "Plane"
-    velocity_slice.SliceType.Origin = [2.0, 0.0, 0.0]
-    velocity_slice.SliceType.Normal = [0.0, 0.0, 1.0]
-    velocity_view = new_view()
-    velocity_display = Show(velocity_slice, velocity_view)
-    velocity_display.Representation = "Surface"
-    ColorBy(velocity_display, ("CELLS", "velocity", "Magnitude"))
-    velocity_display.RescaleTransferFunctionToDataRange(True, False)
-    velocity_display.SetScalarBarVisibility(velocity_view, True)
-    save_xy(velocity_view, args.output / "05_final_velocity_magnitude.png")
+    velocity = cell_values(fetched, "velocity")
+    if velocity:
+        velocity_slice = Slice(Input=reader)
+        velocity_slice.SliceType = "Plane"
+        velocity_slice.SliceType.Origin = [2.0, 0.0, 0.0]
+        velocity_slice.SliceType.Normal = [0.0, 0.0, 1.0]
+        velocity_view = new_view()
+        velocity_display = Show(velocity_slice, velocity_view)
+        velocity_display.Representation = "Surface"
+        ColorBy(velocity_display, ("CELLS", "velocity", "Magnitude"))
+        velocity_display.RescaleTransferFunctionToDataRange(True, False)
+        velocity_display.SetScalarBarVisibility(velocity_view, True)
+        save_xy(velocity_view, args.output / "05_final_velocity_magnitude.png")
+    else:
+        print("velocity cell array unavailable; skipped 05_final_velocity_magnitude.png")
 
     print(f"porous-positive cells: {porous_cells}")
     print(f"porous-partial cells: {partial_cells}")
