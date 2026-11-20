@@ -154,3 +154,31 @@ Render any resulting Ensight case with:
 
 The three outputs intentionally distinguish the fractional cell field used by
 the solver, its display-only `0.5` contour, and the separate mesh/wall geometry.
+
+## Ellipse convergence-horizon pair
+
+`input.g1.ellipse_horizon.active` and
+`input.g1.ellipse_horizon.control` advance the verified provisional G1 packet
+for one flow-through time (`t*=4`, 40,000 steps). The control preserves the
+ellipse, synthetic retaining-mesh resistance, and separator walls but sets the
+bead permeability to `1e30`; active-minus-control pressure therefore isolates
+the provisional bead resistance within the same packet geometry.
+
+The earlier 100-step G1 timing projects about 73 solver minutes per case.
+Accordingly, use `ellipse_horizon_g1_64.sbatch` on Sol rather than running the
+pair locally. Create separate active and control run directories, copy the
+corresponding input to `input` and the batch script into each, then submit each
+directory independently.
+
+After both jobs complete, run:
+
+```bash
+python3 check_ellipse_horizon.py path/to/active path/to/control
+```
+
+The predeclared final-window rule uses `t*=3` through `4`. Active, control, and
+active-minus-control pressure range/absolute-mean must each be no greater than
+`1%`; both cases must also have relative mass-flow error no greater than
+`1e-10`, CFL no greater than `0.8`, and finite bounded diagnostics. Passing this
+rule establishes an averaging window for the provisional model, not physical
+validation.
