@@ -132,3 +132,25 @@ annulus is represented. Representative reruns ended with
 CFL about `0.0056`, maximum divergence about `3.2e-13`, and relative mass-flow
 error about `5e-15`.
 Do not use this smoke result as a calibrated pressure-drop prediction.
+
+## Ellipse geometry smoke
+
+`input.g1.ellipse_walls_mesh.smoke` changes the provisional stick cross-section
+to a `0.105` long `y` axis and `0.060` short streamwise `x` axis while retaining
+the separate mesh annulus and nine separator/closure walls. The short axis and
+mesh resistance are synthetic pending measurements.
+
+A local four-rank, two-step run on 2026-11-20 completed with eight represented
+sticks at `0.0187043%` area error, eight connected porous regions at the `0.5`
+contour, `4,564` mesh-only cells, final CFL `0.00561629`, maximum divergence
+`3.11723e-13`, and relative mass-flow error `6.77761e-15`.
+
+Render any resulting Ensight case with:
+
+```bash
+/Applications/ParaView-6.1.1.app/Contents/bin/pvpython \
+  render_ellipse_smoke.py path/to/nga.case path/to/screenshots
+```
+
+The three outputs intentionally distinguish the fractional cell field used by
+the solver, its display-only `0.5` contour, and the separate mesh/wall geometry.
