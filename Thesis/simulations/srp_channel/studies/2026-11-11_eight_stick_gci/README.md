@@ -182,3 +182,15 @@ active-minus-control pressure range/absolute-mean must each be no greater than
 `1e-10`, CFL no greater than `0.8`, and finite bounded diagnostics. Passing this
 rule establishes an averaging window for the provisional model, not physical
 validation.
+
+Sol active job `2121903` and control job `2121904` completed on 2026-11-20 in
+`25:25` and `25:43`, respectively, with exit code `0`. Over 10,001 aligned
+samples from `t*=3` through `4`, active, control, and net mean pressure drops
+were `226.991040196`, `3.47882472153`, and `223.512215474`; their
+range/absolute-mean values were `0.000440546%`, `0.0149476%`, and
+`0.000447403%`. Maximum evolved divergence was `6.69733e-14`, maximum CFL was
+`0.014806`, and maximum relative mass-flow error was `3.88879e-15`. The pair
+passes every predeclared criterion. The net drop corresponds to about
+`10.7643 Pa` under the provisional `rho_ref U_ref^2=0.04816 Pa` scaling, but it
+is not experimental validation because thickness and resistance inputs remain
+provisional.

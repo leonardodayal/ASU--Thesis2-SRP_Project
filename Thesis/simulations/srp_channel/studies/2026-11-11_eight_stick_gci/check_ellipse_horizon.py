@@ -40,11 +40,14 @@ def load_case(case_dir, final_time, window_start):
     window = [row for row in pressure if row[1] >= window_start]
     if len(window) < 2:
         raise ValueError(f"Too few final-window samples in {case_dir}")
+    evolved = [row for row in simulation if row[0] > 0.0]
+    if not evolved:
+        raise ValueError(f"No evolved simulation rows in {case_dir}")
     return {
         "pressure": {row[0]: row[4] for row in window},
         "max_mass_error": max(abs(row[4]) for row in flow),
-        "max_cfl": max(row[3] for row in simulation),
-        "max_divergence": max(abs(row[8]) for row in simulation),
+        "max_cfl": max(row[3] for row in evolved),
+        "max_divergence": max(abs(row[8]) for row in evolved),
     }
 
 
