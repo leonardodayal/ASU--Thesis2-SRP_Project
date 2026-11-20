@@ -154,6 +154,8 @@ Render any resulting Ensight case with:
 
 The three outputs intentionally distinguish the fractional cell field used by
 the solver, its display-only `0.5` contour, and the separate mesh/wall geometry.
+When pressure and velocity arrays are present, the same command also writes
+final-time pressure and velocity-magnitude slices.
 
 ## Ellipse convergence-horizon pair
 
@@ -221,3 +223,17 @@ measured seconds per step and memory to replace the provisional G3 wall-time
 request if necessary. The timing gate must complete 100 steps with the expected
 eight-stick geometry and no failure markers. Do not infer 128-rank scaling from
 the old circular run.
+
+After all three matched pairs pass their horizon checks, calculate standard
+monotonic three-grid GCI with:
+
+```bash
+python3 calculate_ellipse_gci.py \
+  --g1-active path/to/g1_active --g1-control path/to/g1_control \
+  --g2-active path/to/g2_active --g2-control path/to/g2_control \
+  --g3-active path/to/g3_active --g3-control path/to/g3_control
+```
+
+The calculator reports the net mean sheet drop on each grid, observed order,
+Richardson extrapolation, fine/medium GCI, and asymptotic ratio. It rejects an
+oscillatory or non-positive-order sequence rather than reporting invalid GCI.
