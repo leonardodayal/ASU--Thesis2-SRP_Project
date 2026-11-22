@@ -73,6 +73,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - During long or multi-step work, update those files after each significant verified checkpoint rather than waiting until the end of the task.
 - Immediately before every Git commit, review the staged or intended diff and confirm that the handoff and checklist accurately describe the repository state. Include any required status updates in the same commit.
 - Update `Thesis/Phase2plan.md` as well when Phase 2 completion criteria, work-plan status, assumptions, or execution order change.
+- Maintain `Thesis/project_execution_log.md` as the concise, thesis-ready record of verified implementation milestones, run evidence, problems, resolutions, and remaining limitations. Update it when a result or problem materially changes the project narrative; omit routine monitoring noise.
 - Distinguish verified results from provisional values and pending work. Record the evidence date and source where it affects interpretation.
 - Do not make timestamp-only or wording-only status edits when nothing material changed.
 

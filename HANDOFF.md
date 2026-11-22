@@ -9,6 +9,7 @@ Develop and validate an NGA2 CFD model of SRP's porous bead-rod CO2 collector. T
 ## Sources of truth
 
 - Current checklist: [`Thesis/leo_todo_list.md`](./Thesis/leo_todo_list.md)
+- Thesis-ready execution and problem log: [`Thesis/project_execution_log.md`](./Thesis/project_execution_log.md)
 - Equation provenance and adaptations: [`Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md`](./Thesis/SRP_CO2_COLLECTOR_EQUATION_SHEET.md)
 - Research-component assessment: [`OtherResearch/USABLE_RESEARCH_COMPONENTS.md`](./OtherResearch/USABLE_RESEARCH_COMPONENTS.md)
 - Primary methodological paper: [`OtherResearch/Adsorption performance of radial-flow contactors for direct air capture: A computational study.pdf`](./OtherResearch/Adsorption%20performance%20of%20radial-flow%20contactors%20for%20direct%20air%20capture%3A%20A%20computational%20study.pdf)
