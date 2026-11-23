@@ -1,6 +1,6 @@
 # Project Execution and Problem Log
 
-Last updated: 2026-11-22
+Last updated: 2026-11-23
 
 ## Purpose
 
@@ -72,8 +72,9 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - Active job `2128356` completed on node `sc110` in `20:58:35` with exit code `0`. Final CFL was `0.0808682`, divergence `1.05178e-11`, and stick-area error about `-0.00232178%`; no failure markers were found.
 - Original control `2128357` was numerically stable but ran about 2.6 times slower on `sc047` (`4.93 s/step`) than the active case (`1.89 s/step`). Its projected runtime was about 55 hours, beyond the 36-hour limit.
 - Sol rejected an in-place time-limit extension because the job was already running. Replacement control `2219204` was submitted separately with `sc047` excluded.
-- The replacement sustained the expected rate on `sc050`. The slow original was cancelled after `19:17:51` at step 14,068; the replacement had reached step 8,421 and remained stable.
-- As of 2026-11-22 08:48 MST, replacement control `2219204` was the only remaining compute gate before GCI.
+- The replacement sustained the expected rate on `sc050` and completed in `20:59:10` with exit code `0`. The slow original was cancelled after `19:17:51` at step 14,068.
+- The valid G3 pair passed the `t*=3-4` checks. Net mean drop was `280.380090557` nondimensional, about `13.5031 Pa`, with `0.000356659%` range/mean.
+- G1/G2/G3 net drops were `223.512215474`, `286.715485141`, and `280.380090557`. The sign reversal makes standard monotonic GCI invalid. The calculator correctly rejected the oscillatory sequence.
 
 ## Problems and resolutions
 
@@ -90,6 +91,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 | ParaView pressure/velocity arrays were not always present | Renderer could fail on geometry-only output | Made those renders conditional on array availability |
 | G3 timing smoke underestimated full runtime | Initial 15.2-hour estimate was optimistic | Used a 36-hour production limit and monitored sustained throughput |
 | Node `sc047` ran G3 control about 2.6 times too slowly | Original control would time out | Submitted isolated retry `2219204` excluding `sc047`; cancelled the slow duplicate only after the retry proved faster |
+| G1-G3 net pressure sequence was oscillatory | Standard monotonic GCI was mathematically invalid | Calculator rejected the sequence; advisor decision on G4 or alternative uncertainty treatment is pending |
 | SSH control sockets became stale or were created from inside Sol | Remote monitoring temporarily failed | Removed stale local socket and created the multiplexed connection from the Mac |
 
 ## Current interpretation and limitations
@@ -97,8 +99,8 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - Active/control pressure differences behave qualitatively as intended: the control removes bead resistance while retaining matched geometry.
 - Current pressure results are **calibration-informed, not independent experimental validation**. The permeability was derived from the same packed-filter series used for comparison.
 - Filled pocket thickness, seal airtightness, holder/test-section geometry, tap locations, run-to-configuration mapping, air properties, and measurement uncertainty remain incomplete.
-- The final G3 control must complete and pass the `t*=3–4` checks before calculating observed order, Richardson extrapolation, and GCI.
-- G4 remains conditional on whether a fourth grid is scientifically necessary and computationally justified.
+- Standard monotonic GCI cannot be reported from the present G1-G3 sequence.
+- G4 or a justified oscillatory-convergence uncertainty method is now required before claiming grid independence.
 
 ## Evidence locations
 

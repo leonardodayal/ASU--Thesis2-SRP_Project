@@ -237,3 +237,23 @@ python3 calculate_ellipse_gci.py \
 The calculator reports the net mean sheet drop on each grid, observed order,
 Richardson extrapolation, fine/medium GCI, and asymptotic ratio. It rejects an
 oscillatory or non-positive-order sequence rather than reporting invalid GCI.
+
+The completed production results are:
+
+| Grid | Net mean drop, `t*=3-4` | Provisional physical drop |
+|---|---:|---:|
+| G1 | `223.512215474` | `10.7643 Pa` |
+| G2 | `286.715485141` | `13.8082 Pa` |
+| G3 | `280.380090557` | `13.5031 Pa` |
+
+G3 active job `2128356` and replacement control `2219204` completed in
+`20:58:35` and `20:59:10`, passed the horizon and diagnostic checks, and used
+10,001 aligned final-window samples. Original control `2128357` was cancelled
+after node `sc047` delivered about 2.6 times lower throughput; it is excluded
+from analysis.
+
+The G1-G3 sequence increases and then decreases. Standard monotonic GCI is
+therefore invalid, and `calculate_ellipse_gci.py` correctly rejects it as
+oscillatory. The G2-G3 change is `2.25957%` relative to G3, but this does not
+establish asymptotic convergence. Review whether to run G4 or apply a justified
+oscillatory-convergence uncertainty method before claiming grid independence.
