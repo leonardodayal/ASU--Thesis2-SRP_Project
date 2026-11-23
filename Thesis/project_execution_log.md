@@ -75,6 +75,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - The replacement sustained the expected rate on `sc050` and completed in `20:59:10` with exit code `0`. The slow original was cancelled after `19:17:51` at step 14,068.
 - The valid G3 pair passed the `t*=3-4` checks. Net mean drop was `280.380090557` nondimensional, about `13.5031 Pa`, with `0.000356659%` range/mean.
 - G1/G2/G3 net drops were `223.512215474`, `286.715485141`, and `280.380090557`. The sign reversal makes standard monotonic GCI invalid. The calculator correctly rejected the oscillatory sequence.
+- At the November 23 advisor meeting, G4 was paused. The next task is a converged G3 active visualization rerun and spatial inspection of pressure, velocity, porous geometry, retaining mesh, and walls.
 
 ## Problems and resolutions
 
@@ -100,7 +101,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - Current pressure results are **calibration-informed, not independent experimental validation**. The permeability was derived from the same packed-filter series used for comparison.
 - Filled pocket thickness, seal airtightness, holder/test-section geometry, tap locations, run-to-configuration mapping, air properties, and measurement uncertainty remain incomplete.
 - Standard monotonic GCI cannot be reported from the present G1-G3 sequence.
-- G4 or a justified oscillatory-convergence uncertainty method is now required before claiming grid independence.
+- G4 is on hold while the converged G3 flow fields are inspected. Grid independence remains unclaimed.
 
 ## Evidence locations
 

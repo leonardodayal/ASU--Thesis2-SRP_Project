@@ -1,0 +1,39 @@
+#!/bin/bash
+#SBATCH --job-name=srp-ell-g3-viz
+#SBATCH --partition=public
+#SBATCH --qos=public
+#SBATCH --account=grp_mherrma1
+#SBATCH --nodes=1
+#SBATCH --ntasks=128
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=128G
+#SBATCH --time=1-12:00:00
+#SBATCH --export=NONE
+
+set -euo pipefail
+module purge
+module load gcc/15.2.0
+module load openmpi/5.0.8-gcc-15.2.0
+module load fftw/3.3.11-openmpi-5.0.8-gcc-15.2.0
+
+exe="$HOME/ASU--Thesis2-SRP_Project/Thesis/simulations/srp_channel/nga.dp.gnu.opt.mpi.exe"
+test -x "$exe"
+test -s input
+echo "Executable: $exe"; sha256sum "$exe"
+echo "Input: $(pwd)/input"; echo "Started: $(date --iso-8601=seconds)"
+srun --export=ALL "$exe" -i input
+
+test -s monitor/simulation
+test "$(awk 'END {print $1}' monitor/simulation)" = "40000"
+test "$(($(wc -l < monitor/geometry_audit.csv) - 1))" = "8"
+test -s ensight/srp_channel/nga.case
+test -s ensight/srp_channel/geometry
+test -s ensight/srp_channel/geometry.fvf
+for field in pressure velocity porous_mask mesh_mask wall_vf; do
+  test -s "ensight/srp_channel/$field/$field.000002"
+done
+if grep -RqiE 'nan|infinity|fatal|solver failure|error:' monitor; then
+  echo "Failure marker found in monitor output." >&2; exit 1
+fi
+du -sh ensight
+echo "Finished: $(date --iso-8601=seconds)"

@@ -257,3 +257,18 @@ therefore invalid, and `calculate_ellipse_gci.py` correctly rejects it as
 oscillatory. The G2-G3 change is `2.25957%` relative to G3, but this does not
 establish asymptotic convergence. Review whether to run G4 or apply a justified
 oscillatory-convergence uncertainty method before claiming grid independence.
+
+## Converged G3 visualization
+
+Advisor direction on 2026-11-23 is to hold G4 and inspect the G3 flow fields.
+The production runs disabled field output, so
+`input.g3.ellipse_production.visualization` reproduces active job `2128356`
+and writes only the initial and final Ensight states. Submit it with
+`ellipse_visualization_g3_128.sbatch` on 128 ranks and exclude `sc047`, which
+showed anomalously low throughput during the original control run.
+
+After completion, copy the ignored Ensight dataset locally and render it with
+`render_ellipse_smoke.py`. The required views are the fractional solver mask,
+`0.5` contour, retaining mesh/walls, final pressure, and final velocity
+magnitude. Compare the spatial fields with the completed G1 visualization
+before selecting any additional grid run.
