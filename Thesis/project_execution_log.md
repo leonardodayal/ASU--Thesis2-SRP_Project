@@ -75,7 +75,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - The replacement sustained the expected rate on `sc050` and completed in `20:59:10` with exit code `0`. The slow original was cancelled after `19:17:51` at step 14,068.
 - The valid G3 pair passed the `t*=3-4` checks. Net mean drop was `280.380090557` nondimensional, about `13.5031 Pa`, with `0.000356659%` range/mean.
 - G1/G2/G3 net drops were `223.512215474`, `286.715485141`, and `280.380090557`. The sign reversal makes standard monotonic GCI invalid. The calculator correctly rejected the oscillatory sequence.
-- At the November 23 advisor meeting, G4 was paused. The next task is a converged G3 active visualization rerun and spatial inspection of pressure, velocity, porous geometry, retaining mesh, and walls.
+- At the November 23 advisor meeting, G4 was paused. Converged G3 active visualization job `2284521` was submitted on 128 cores with `sc047` excluded to capture initial/final pressure, velocity, porous geometry, retaining mesh, and walls.
 
 ## Problems and resolutions
 
