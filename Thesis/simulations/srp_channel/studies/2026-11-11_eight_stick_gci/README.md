@@ -275,3 +275,9 @@ After completion, copy the ignored Ensight dataset locally and render it with
 `0.5` contour, retaining mesh/walls, final pressure, and final velocity
 magnitude. Compare the spatial fields with the completed G1 visualization
 before selecting any additional grid run.
+
+`input.g3.ellipse_production.visualization64` and
+`ellipse_visualization_g3_64.sbatch` provide a 64-rank scheduling alternative
+using the verified `16 x 4 x 1` decomposition. Its estimated runtime is about
+28 hours with a 36-hour limit. Submit it only as a scheduling hedge and cancel
+the option with the later estimated completion before either duplicate runs.
