@@ -75,7 +75,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - The replacement sustained the expected rate on `sc050` and completed in `20:59:10` with exit code `0`. The slow original was cancelled after `19:17:51` at step 14,068.
 - The valid G3 pair passed the `t*=3-4` checks. Net mean drop was `280.380090557` nondimensional, about `13.5031 Pa`, with `0.000356659%` range/mean.
 - G1/G2/G3 net drops were `223.512215474`, `286.715485141`, and `280.380090557`. The sign reversal makes standard monotonic GCI invalid. The calculator correctly rejected the oscillatory sequence.
-- At the November 23 advisor meeting, G4 was paused in favor of G3 flow-field inspection. Production history showed that `t*=3` is sufficient for visualization (`0.000293%` pressure and `0.127%` transverse-velocity-maximum difference from the mature state). The 128-core job `2314399` was estimated to start November 25 at 08:26 MST. A 64-core, 36-hour scheduling hedge was prepared to test whether a smaller allocation would finish earlier despite its roughly 28-hour runtime.
+- At the November 23 advisor meeting, G4 was paused in favor of G3 flow-field inspection. Production history showed that `t*=3` is sufficient for visualization (`0.000293%` pressure and `0.127%` transverse-velocity-maximum difference from the mature state). The 128-core job `2314399` was held after receiving a November 25 08:26 MST estimate. The 64-core hedge `2314557` was submitted with a 36-hour limit to test whether a smaller allocation would finish earlier despite its roughly 28-hour runtime.
 
 ## Problems and resolutions
 
