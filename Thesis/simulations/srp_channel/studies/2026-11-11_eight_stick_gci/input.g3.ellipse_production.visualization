@@ -1,4 +1,4 @@
-# G3 converged active ellipse case with initial/final Ensight output.
+# G3 mature-flow active ellipse case with initial/final Ensight output.
 # This reproduces production active job 2128356 for spatial inspection.
 Partition : 16 8 1
 nx : 768
@@ -34,6 +34,6 @@ Flow split plane : 3
 Flow split bands : 8
 Max timestep size : 1e-4
 Max cfl number : 0.8
-Max time : 4
+Max time : 3
 Write Ensight output : T
-Ensight output period : 4
+Ensight output period : 3

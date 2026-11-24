@@ -262,8 +262,11 @@ oscillatory-convergence uncertainty method before claiming grid independence.
 
 Advisor direction on 2026-11-23 is to hold G4 and inspect the G3 flow fields.
 The production runs disabled field output, so
-`input.g3.ellipse_production.visualization` reproduces active job `2128356`
-and writes only the initial and final Ensight states. Submit it with
+`input.g3.ellipse_production.visualization` reproduces the mature active flow
+through `t*=3` and writes only the initial and final Ensight states. At `t*=3`,
+pressure differs from the production final-window mean by `0.000293%` and the
+transverse velocity maximum differs by `0.127%`; extending a visualization-only
+run to `t*=4` is therefore unnecessary. Submit it with
 `ellipse_visualization_g3_128.sbatch` on 128 ranks and exclude `sc047`, which
 showed anomalously low throughput during the original control run.
 

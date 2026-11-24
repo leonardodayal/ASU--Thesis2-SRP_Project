@@ -7,7 +7,7 @@
 #SBATCH --ntasks=128
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=128G
-#SBATCH --time=1-12:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH --export=NONE
 
 set -euo pipefail
@@ -24,7 +24,7 @@ echo "Input: $(pwd)/input"; echo "Started: $(date --iso-8601=seconds)"
 srun --export=ALL "$exe" -i input
 
 test -s monitor/simulation
-test "$(awk 'END {print $1}' monitor/simulation)" = "40000"
+test "$(awk 'END {print $1}' monitor/simulation)" = "30000"
 test "$(($(wc -l < monitor/geometry_audit.csv) - 1))" = "8"
 test -s ensight/srp_channel/nga.case
 test -s ensight/srp_channel/geometry
