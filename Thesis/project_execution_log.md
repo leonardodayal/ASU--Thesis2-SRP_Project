@@ -1,6 +1,6 @@
 # Project Execution and Problem Log
 
-Last updated: 2026-11-23
+Last updated: 2026-11-25
 
 ## Purpose
 
@@ -75,7 +75,8 @@ This is the concise thesis-ready record of major implementation steps, verified 
 - The replacement sustained the expected rate on `sc050` and completed in `20:59:10` with exit code `0`. The slow original was cancelled after `19:17:51` at step 14,068.
 - The valid G3 pair passed the `t*=3-4` checks. Net mean drop was `280.380090557` nondimensional, about `13.5031 Pa`, with `0.000356659%` range/mean.
 - G1/G2/G3 net drops were `223.512215474`, `286.715485141`, and `280.380090557`. The sign reversal makes standard monotonic GCI invalid. The calculator correctly rejected the oscillatory sequence.
-- At the November 23 advisor meeting, G4 was paused in favor of G3 flow-field inspection. Production history showed that `t*=3` is sufficient for visualization (`0.000293%` pressure and `0.127%` transverse-velocity-maximum difference from the mature state). Running 64-core job `2314557` later slowed on `sc051` to about `4.88 s/step`, projecting roughly three hours beyond its 36-hour limit. Slurm rejected a user-level extension. A 128-core, 24-hour hedge `2356718` was submitted with `sc047` and `sc051` excluded while an administrator extension of at least six hours is requested.
+- At the November 23 advisor meeting, G4 was paused in favor of G3 flow-field inspection. Production history showed that `t*=3` is sufficient for visualization (`0.000293%` pressure and `0.127%` transverse-velocity-maximum difference from the mature state). Job `2314557` completed on 64 cores in `32:58:22` and produced a verified 1.6 GB two-state dataset. It was copied locally and rendered; the 128-core hedge was cancelled after `1:03:02`.
+- The G3 renders show eight distinct ellipses, continuous retaining mesh and separator walls, a sharp pressure drop across the packet, and eight downstream high-speed jets separated by slower wakes. No obvious asymmetry or field corruption is visible.
 
 ## Problems and resolutions
 
@@ -92,7 +93,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 | ParaView pressure/velocity arrays were not always present | Renderer could fail on geometry-only output | Made those renders conditional on array availability |
 | G3 timing smoke underestimated full runtime | Initial 15.2-hour estimate was optimistic | Used a 36-hour production limit and monitored sustained throughput |
 | Node `sc047` ran G3 control about 2.6 times too slowly | Original control would time out | Submitted isolated retry `2219204` excluding `sc047`; cancelled the slow duplicate only after the retry proved faster |
-| The 64-core G3 visualization slowed on `sc051` | Projected runtime exceeded its 36-hour allocation | Submitted 128-core hedge `2356718`, excluded both slow nodes, and requested an administrator time extension for the running job |
+| The 64-core G3 visualization temporarily projected beyond its allocation | Mature 3D output was at risk | Submitted hedge `2356718`; the original rate recovered and completed, then the hedge was cancelled |
 | Highest-fidelity G3 production disabled spatial output | Monitors survived, but flow-field inspection required a full rerun | Added a project rule requiring mature 3D fields and durable off-scratch preservation for each new highest-fidelity milestone |
 | G1-G3 net pressure sequence was oscillatory | Standard monotonic GCI was mathematically invalid | Calculator rejected the sequence; advisor decision on G4 or alternative uncertainty treatment is pending |
 | SSH control sockets became stale or were created from inside Sol | Remote monitoring temporarily failed | Removed stale local socket and created the multiplexed connection from the Mac |

@@ -279,5 +279,12 @@ before selecting any additional grid run.
 `input.g3.ellipse_production.visualization64` and
 `ellipse_visualization_g3_64.sbatch` provide a 64-rank scheduling alternative
 using the verified `16 x 4 x 1` decomposition. Its estimated runtime is about
-28 hours with a 36-hour limit. Submit it only as a scheduling hedge and cancel
-the option with the later estimated completion before either duplicate runs.
+28 hours with a 36-hour limit. It was submitted as a scheduling hedge; future
+duplicates should be cancelled once one valid visualization completes.
+
+Job `2314557` completed the 64-rank visualization on 2026-11-25 in
+`32:58:22` with exit code `0`. It produced a verified 1.6 GB dataset and five
+local renders. The final pressure field shows the sharp packet drop; velocity
+magnitude shows eight downstream jets and slower wakes. The ignored local copy
+is `paraview_data/g3_ellipse_t3`, and provenance/checksums are recorded in
+`G3_VISUALIZATION_MANIFEST.md`. Preserve an external or backed-up copy.
