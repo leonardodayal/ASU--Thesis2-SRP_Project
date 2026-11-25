@@ -93,6 +93,7 @@ This is the concise thesis-ready record of major implementation steps, verified 
 | G3 timing smoke underestimated full runtime | Initial 15.2-hour estimate was optimistic | Used a 36-hour production limit and monitored sustained throughput |
 | Node `sc047` ran G3 control about 2.6 times too slowly | Original control would time out | Submitted isolated retry `2219204` excluding `sc047`; cancelled the slow duplicate only after the retry proved faster |
 | The 64-core G3 visualization slowed on `sc051` | Projected runtime exceeded its 36-hour allocation | Submitted 128-core hedge `2356718`, excluded both slow nodes, and requested an administrator time extension for the running job |
+| Highest-fidelity G3 production disabled spatial output | Monitors survived, but flow-field inspection required a full rerun | Added a project rule requiring mature 3D fields and durable off-scratch preservation for each new highest-fidelity milestone |
 | G1-G3 net pressure sequence was oscillatory | Standard monotonic GCI was mathematically invalid | Calculator rejected the sequence; advisor decision on G4 or alternative uncertainty treatment is pending |
 | SSH control sockets became stale or were created from inside Sol | Remote monitoring temporarily failed | Removed stale local socket and created the multiplexed connection from the Mac |
 
